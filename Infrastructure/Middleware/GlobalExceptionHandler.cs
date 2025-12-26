@@ -1,0 +1,154 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+
+namespace MenuSoda.Infrastructure.Middleware;
+
+public sealed class GlobalExceptionHandler : IExceptionHandler
+{
+    private readonly ProblemDetailsFactory _problemDetailsFactory;
+    private readonly ILogger<GlobalExceptionHandler> _logger;
+    private readonly IHostEnvironment _env;
+
+    public GlobalExceptionHandler(
+        ProblemDetailsFactory problemDetailsFactory,
+        ILogger<GlobalExceptionHandler> logger,
+        IHostEnvironment env)
+    {
+        _problemDetailsFactory = problemDetailsFactory;
+        _logger = logger;
+        _env = env;
+    }
+
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken)
+    {
+        var status = exception switch
+        {
+            ArgumentException                  => StatusCodes.Status400BadRequest,
+            FormatException                    => StatusCodes.Status400BadRequest,
+            ValidationException                => StatusCodes.Status400BadRequest,
+            InvalidOperationException          => StatusCodes.Status400BadRequest,
+            System.Text.Json.JsonException     => StatusCodes.Status400BadRequest,
+
+            System.Security.SecurityException  => StatusCodes.Status403Forbidden,
+
+            KeyNotFoundException               => StatusCodes.Status404NotFound,
+            FileNotFoundException              => StatusCodes.Status404NotFound,
+            DirectoryNotFoundException         => StatusCodes.Status404NotFound,
+
+            TimeoutException                   => StatusCodes.Status408RequestTimeout,
+            TaskCanceledException              => StatusCodes.Status408RequestTimeout,
+            OperationCanceledException         => StatusCodes.Status408RequestTimeout,
+
+            UnauthorizedAccessException        => StatusCodes.Status401Unauthorized,
+
+            CustomBusinessValidationException  => StatusCodes.Status422UnprocessableEntity,
+
+            _                                  => StatusCodes.Status500InternalServerError
+        };
+
+        _logger.LogError(exception, "Excepción no controlada");
+
+        var title = MapTitle(exception);
+
+        var problem = _problemDetailsFactory.CreateProblemDetails(
+            httpContext,
+            statusCode: status,
+            title: title,
+            instance: httpContext.Request.Path
+        );
+
+        if (_env.IsDevelopment())
+        {
+            problem.Detail = status == StatusCodes.Status500InternalServerError
+                ? $"{exception.GetType().Name}: {exception.Message} - {exception.InnerException?.Message}"
+                : exception.Message;
+        }
+
+        if (!_env.IsDevelopment())
+        {
+            problem.Detail = MapProductionDetail(exception, status);
+        }
+
+        problem.Extensions["code"] = MapCode(exception);
+        problem.Extensions["traceId"] = httpContext.TraceIdentifier;
+
+        httpContext.Response.StatusCode = status;
+        httpContext.Response.ContentType = "application/problem+json";
+        await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);
+        return true;
+    }
+
+    private static string MapCode(Exception ex) => ex switch
+    {
+        ArgumentException                   => "ERR_BAD_REQUEST",
+        FormatException                     => "ERR_BAD_REQUEST",
+        ValidationException                 => "ERR_BAD_REQUEST",
+        InvalidOperationException           => "ERR_BAD_REQUEST",
+        System.Text.Json.JsonException      => "ERR_BAD_REQUEST",
+
+        System.Security.SecurityException   => "ERR_FORBIDDEN",
+
+        KeyNotFoundException                => "ERR_NOT_FOUND",
+        FileNotFoundException               => "ERR_NOT_FOUND",
+        DirectoryNotFoundException          => "ERR_NOT_FOUND",
+
+        TimeoutException                    => "ERR_TIMEOUT",
+        TaskCanceledException               => "ERR_TIMEOUT",
+        OperationCanceledException          => "ERR_TIMEOUT",
+
+        UnauthorizedAccessException         => "ERR_NO_AUTORIZADO",
+        
+        CustomBusinessValidationException   => "ERR_BUSSNIESS_VALIDATION",
+
+        _                                   => "ERR_INTERNO"
+    };
+
+    private static string MapTitle(Exception ex) => ex switch
+    {
+        ArgumentException                   => "Solicitud inválida (argumento incorrecto)",
+        FormatException                     => "Formato de datos inválido",
+        ValidationException                 => "Error de validación de datos",
+        InvalidOperationException           => "Operación inválida",
+        System.Text.Json.JsonException      => "JSON mal formado",
+
+        System.Security.SecurityException   => "Sin permiso al recurso",
+        
+        KeyNotFoundException                => "Recurso no encontrado",
+        FileNotFoundException               => "Archivo no encontrado",
+        DirectoryNotFoundException          => "Directorio no encontrado",
+        
+        TimeoutException                    => "Tiempo de espera excedido",
+        TaskCanceledException               => "Operación cancelada por timeout",
+        OperationCanceledException          => "Operación cancelada",
+
+        UnauthorizedAccessException         => "No autorizado",
+        
+        CustomBusinessValidationException   => "Reglas de negocio insatifichas",
+
+        _                                   => "Error interno del servidor"
+    };
+
+    private static string MapProductionDetail(Exception ex, int status) => status switch
+    {
+        StatusCodes.Status400BadRequest            => "La solicitud contiene datos inválidos.",
+        StatusCodes.Status401Unauthorized          => "Debe autenticarse para continuar.",
+        StatusCodes.Status403Forbidden             => "No tiene permisos para esta operación.",
+        StatusCodes.Status404NotFound              => "El recurso solicitado no existe.",
+        StatusCodes.Status408RequestTimeout        => "La solicitud excedió el tiempo de espera.",
+        StatusCodes.Status422UnprocessableEntity   => ex is CustomBusinessValidationException
+                                                        ? ex.Message // mensaje de negocio (si es seguro)
+                                                        : "Reglas de negocio no satisfechas.",
+        _                                          => "Se produjo un error inesperado en el servidor."
+    };
+
+    public sealed class CustomBusinessValidationException : Exception
+    {
+        public CustomBusinessValidationException(string message) : base(message) {}
+        public CustomBusinessValidationException(string message, Exception inner) : base(message, inner) {}
+        
+    }
+}
