@@ -17,12 +17,10 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var token = await _authService.LoginAsync(request);
-        if (token == null)
-        {
+        var accessToken = await _authService.LoginAsync(request);
+        if (accessToken == null)
             return Unauthorized();
-        }
 
-        return Ok(new { Token = token });
+        return Ok(new { Token = accessToken });
     }
 }

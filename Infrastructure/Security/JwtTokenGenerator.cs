@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using MenuSoda.Domain.Interfaces.Security;
 using MenuSoda.Domain.Users;
 using Microsoft.IdentityModel.Tokens;
 
@@ -29,7 +30,7 @@ public class JwtTokenGenerator : ITokenGenerator
             issuer: "MenuSodaAPI",
             audience: "MenuSodaClients",
             claims: claims,
-            expires: DateTime.Now.AddMinutes(30),
+            expires: DateTime.UtcNow.AddMinutes(30),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

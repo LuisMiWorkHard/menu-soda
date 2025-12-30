@@ -1,6 +1,9 @@
 using MenuSoda.Domain.Users;
 
-public interface ITokenGenerator
+namespace MenuSoda.Domain.Interfaces.Security
 {
-    string GenerateToken(User user);
+    public interface ITokenGenerator
+    {
+        string GenerateToken(User user);
+    }
 }
