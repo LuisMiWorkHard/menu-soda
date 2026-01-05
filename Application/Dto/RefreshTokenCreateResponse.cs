@@ -1,6 +1,9 @@
-public class RefreshTokenCreateResponse
+namespace MenuSoda.Application.Dto
 {
-    public string? PlainText { get; set; } = null!;
-    public DateTime ExpiresUtc { get; set; }
-    public Guid TokenId { get; set; }
+    public class RefreshTokenCreateResponse
+    {
+        public string? PlainText { get; set; } = null!;
+        public DateTime ExpiresUtc { get; set; }
+        public Guid TokenId { get; set; }
+    }
 }

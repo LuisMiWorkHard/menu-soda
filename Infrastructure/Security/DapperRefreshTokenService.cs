@@ -2,6 +2,7 @@ using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using Dapper;
+using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Interfaces.Security;
 using Npgsql;
 
@@ -41,9 +42,19 @@ public class DapperRefreshTokenService : IRefreshToken
         };
     }
 
-    public Task<RefreshTokenRow?> GetByPlainAsync(string plainText)
+    public Task<RefreshTokenGetByHashRequest?> GetByPlainAsync(string plainText)
     {
-        throw new NotImplementedException();
+        /*SELECT id, usuid, hash, feccreutc, ipcre, fecexputc,
+           fecrevoutc, iprev, reftokidref, useragent, deviceid,
+           geolat, geolon
+        FROM seguridad.refreshtoken*/
+
+        using var conn = new SqlConnection(_cs);
+        var hash = Hash(plainText);
+        return await conn.QueryFirstOrDefaultAsync<RefreshTokenRow>(
+            "dbo.sp_RefreshToken_GetByHash",
+            new { TokenHash = hash },
+            commandType: CommandType.StoredProcedure);
     }
 
     public Task RevokeAllActiveAsync(Guid userId, string? ip)

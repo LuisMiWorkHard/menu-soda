@@ -1,6 +1,9 @@
-public class LoginRequest
+namespace MenuSoda.Application.Dto
 {
-    public int TipoDocumento { get; set; }
-    public string NumeroDocumento { get; set; } = "";
-    public string Contrasena { get; set; } = "";
+    public class LoginRequest
+    {
+        public int TipoDocumento { get; set; }
+        public string NumeroDocumento { get; set; } = "";
+        public string Contrasena { get; set; } = "";
+    }
 }
