@@ -1,6 +1,6 @@
 namespace MenuSoda.Application.Dto
 {
-    public class RefreshTokenGetByHashRequest
+    public class RefreshTokenGetByHashResponse
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
