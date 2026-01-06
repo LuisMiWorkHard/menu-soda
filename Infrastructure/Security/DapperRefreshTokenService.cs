@@ -66,7 +66,7 @@ public class DapperRefreshTokenService : IRefreshToken
         var hash = Hash(plainText);
         return await _genericRepository.GetSingleByProcedureAsync<RefreshTokenGetByHashResponse>(
             "seguridad.sp_get_refreshtoken_by_hash",
-            new { TokenHash = hash }
+            new { p_hash = hash }
         );
         /*return await conn.QueryFirstOrDefaultAsync<RefreshTokenGetByHashResponse>(
             "dbo.sp_RefreshToken_GetByHash",
@@ -74,20 +74,19 @@ public class DapperRefreshTokenService : IRefreshToken
             commandType: CommandType.StoredProcedure);*/
     }
 
-    public Task RevokeAllActiveAsync(Guid userId, string? ip)
+    public async Task RevokeAllActiveAsync(int userId, string? ip)
     {
-        using var conn = new SqlConnection(_cs);
-            await conn.ExecuteAsync(
-                "dbo.sp_RefreshToken_RevokeAll",
-                new { UserId = userId, Ip = ip },
-                commandType: CommandType.StoredProcedure);
+        await _genericRepository.ExecuteNonQueryProcedureAsync(
+            "seguridad.sp_RefreshToken_RevokeAll",
+            new { p_usuid = userId, p_ip = ip }
+        );
     }
 
-    public Task<(string newPlainText, DateTime newExpiresUtc, Guid newTokenId)> RotateAsync(Guid oldTokenId, Guid userId, string? ip, int daysToExpire = 14)
+    public Task<RefreshTokenRotateResponse> RotateAsync(RefreshTokenRotateRequest request)
     {
         throw new NotImplementedException();
     }
 
-    private static string GenerateToken(int bytes) => Convert.          ToBase64String(RandomNumberGenerator.GetBytes(bytes));
+    private static string GenerateToken(int bytes) => Convert.ToBase64String(RandomNumberGenerator.GetBytes(bytes));
     private static string Hash(string s) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(s)));
 }

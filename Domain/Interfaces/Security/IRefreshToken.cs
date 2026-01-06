@@ -5,8 +5,8 @@ namespace MenuSoda.Domain.Interfaces.Security
     public interface IRefreshToken
     {
         Task<RefreshTokenCreateResponse> CreateAsync(RefreshTokenCreateRequest request);
-        Task<RefreshTokenGetByHashRequest?> GetByPlainAsync(string plainText); // trae incluso revocados/expirados
-        Task<(string newPlainText, DateTime newExpiresUtc, Guid newTokenId)> RotateAsync(Guid oldTokenId, Guid userId, string? ip, int daysToExpire = 14);
-        Task RevokeAllActiveAsync(Guid userId, string? ip);
+        Task<RefreshTokenGetByHashResponse?> GetByPlainAsync(string plainText); // trae incluso revocados/expirados
+        Task<RefreshTokenRotateResponse> RotateAsync(RefreshTokenRotateRequest request);
+        Task RevokeAllActiveAsync(int userId, string? ip);
     }
 }
