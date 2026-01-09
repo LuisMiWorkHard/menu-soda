@@ -1,3 +1,4 @@
+using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Users;
 
 public interface IUserRepository

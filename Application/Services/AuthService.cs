@@ -1,3 +1,4 @@
+using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Interfaces.Security;
 
 namespace MenuSoda.Application.Services;
