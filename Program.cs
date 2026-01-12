@@ -77,6 +77,9 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
+// Valida headers requeridos para todas las solicitudes
+app.UseMiddleware<RequiredHeadersMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();

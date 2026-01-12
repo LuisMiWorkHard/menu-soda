@@ -1,5 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Services;
+using MenuSoda.Domain.Interfaces.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,11 +10,14 @@ using Microsoft.AspNetCore.Mvc;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AuthService _authService;
 
-    public AuthController(AuthService authService)
+    private readonly AuthService _authService;
+    private readonly IRefreshToken _refreshTokens;
+
+    public AuthController(AuthService authService, IRefreshToken refreshTokens)
     {
         _authService = authService;
+        _refreshTokens = refreshTokens;
     }
 
     [AllowAnonymous]
@@ -19,8 +25,32 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var accessToken = await _authService.LoginAsync(request);
-        if (accessToken == null)
-            return Unauthorized();
+        if (accessToken == null) return Unauthorized();
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+        var userIdClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub || c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim == null) return Unauthorized();
+
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        RefreshTokenCreateResponse response = await _refreshTokens.CreateAsync(new RefreshTokenCreateRequest
+        {
+            UserId = int.Parse(userIdClaim.Value),
+            IpAddress = ip,
+            UserAgent = Request.Headers.UserAgent.ToString(),
+            DeviceId = Request.Headers["DeviceId"].ToString(),
+            GeoLat = request.Latitud,
+            GeoLon = request.Longitud,
+            DaysToExpire = 15
+        });
+
+        Response.Cookies.Append("refresh_token", response.PlainText, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = response.ExpiresUtc
+        });
 
         return Ok(new { Token = accessToken });
     }

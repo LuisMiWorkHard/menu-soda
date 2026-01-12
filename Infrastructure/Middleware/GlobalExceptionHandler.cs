@@ -30,7 +30,6 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             ArgumentException                  => StatusCodes.Status400BadRequest,
             FormatException                    => StatusCodes.Status400BadRequest,
             ValidationException                => StatusCodes.Status400BadRequest,
-            InvalidOperationException          => StatusCodes.Status400BadRequest,
             System.Text.Json.JsonException     => StatusCodes.Status400BadRequest,
 
             System.Security.SecurityException  => StatusCodes.Status403Forbidden,
@@ -87,7 +86,6 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         ArgumentException                   => "ERR_BAD_REQUEST",
         FormatException                     => "ERR_BAD_REQUEST",
         ValidationException                 => "ERR_BAD_REQUEST",
-        InvalidOperationException           => "ERR_BAD_REQUEST",
         System.Text.Json.JsonException      => "ERR_BAD_REQUEST",
 
         System.Security.SecurityException   => "ERR_FORBIDDEN",
@@ -109,10 +107,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
     private static string MapTitle(Exception ex) => ex switch
     {
+        /*argumento inválido para un método. Se usa al validar parámetros de entrada (valor fuera de rango, nulo cuando no toca, combinación inválida). Ej.: comprobar x > 0*/
         ArgumentException                   => "Solicitud inválida (argumento incorrecto)",
+        /*formato inválido para un dato. Ej.: fecha mal formada, número con letras, cadena no convertible a enum*/
         FormatException                     => "Formato de datos inválido",
+        /*error de validación de datos. Usado por DataAnnotations y FluentValidation*/
         ValidationException                 => "Error de validación de datos",
-        InvalidOperationException           => "Operación inválida",
         System.Text.Json.JsonException      => "JSON mal formado",
 
         System.Security.SecurityException   => "Sin permiso al recurso",
