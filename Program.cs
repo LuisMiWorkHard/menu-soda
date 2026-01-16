@@ -68,7 +68,7 @@ builder.Services.Configure<ApiBehaviorOptions>(o =>
         var problem = factory.CreateValidationProblemDetails(
             ctx.HttpContext,
             ctx.ModelState,
-            statusCode: StatusCodes.Status400BadRequest,
+            statusCode: StatusCodes.Status422UnprocessableEntity,
             title: "Datos inválidos",
             detail: "La solicitud contiene datos inválidos"
         );
@@ -100,10 +100,9 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 // Valida headers requeridos para todas las solicitudes
 app.UseMiddleware<RequiredHeadersMiddleware>();
-
-app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
