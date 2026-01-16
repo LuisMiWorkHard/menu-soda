@@ -57,12 +57,12 @@ public class DapperRefreshTokenService : IRefreshToken
         };
     }
 
-    public async Task<RefreshTokenGetByHashResponse?> GetByPlainAsync(string plainText)
+    public async Task<RefreshTokenGetByHashResponse?> GetActiveByPlainAsync(string plainText)
     {
         //using var conn = new NpgsqlConnection(_cs);
         var hash = Hash(plainText);
         return await _genericRepository.GetSingleByProcedureAsync<RefreshTokenGetByHashResponse>(
-            "seguridad.sp_get_refreshtoken_by_hash",
+            "seguridad.sp_get_active_refreshtoken_hash",
             new { p_hash = hash }
         );
         /*return await conn.QueryFirstOrDefaultAsync<RefreshTokenGetByHashResponse>(

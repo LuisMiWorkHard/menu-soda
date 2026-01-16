@@ -55,6 +55,38 @@ public class AuthController : ControllerBase
         return Ok(new { Token = accessToken });
     }
 
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh()
+    {
+        var cookie = Request.Cookies["refresh_token"];
+        if (string.IsNullOrEmpty(cookie)) return Unauthorized();
+
+        var active = await _refreshTokens.GetActiveByPlainAsync(cookie);
+        if (active is null) return Unauthorized();
+
+        var (oldTokenId, userId, _) = active.Value;
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        var (newPlain, newExpires, _) = await _refreshTokens.RotateAsync(oldTokenId, userId, ip, daysToExpire: 14);
+
+        // Cargar usuario para emitir nuevo access token
+        var user = await _authService.GetUserByIdAsync(userId);
+        if (user is null) return Unauthorized();
+
+        var newAccess = _tokenGenerator.GenerateToken(user);
+
+        Response.Cookies.Append("refresh_token", newPlain, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = newExpires
+        });
+
+        return Ok(new { Token = newAccess });
+    }
+
     /*
     private readonly IRefreshTokenService _refreshTokens;
     private readonly ITokenGenerator _tokenGenerator;
