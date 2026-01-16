@@ -1,3 +1,4 @@
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using MenuSoda.Application.Dto;
@@ -13,11 +14,13 @@ public class AuthController : ControllerBase
 
     private readonly AuthService _authService;
     private readonly IRefreshToken _refreshTokens;
+    private readonly ITokenGenerator _tokenGenerator;
 
-    public AuthController(AuthService authService, IRefreshToken refreshTokens)
+    public AuthController(AuthService authService, IRefreshToken refreshTokens, ITokenGenerator tokenGenerator)
     {
         _authService = authService;
         _refreshTokens = refreshTokens;
+        _tokenGenerator = tokenGenerator;
     }
 
     [AllowAnonymous]
@@ -65,10 +68,19 @@ public class AuthController : ControllerBase
         var active = await _refreshTokens.GetActiveByPlainAsync(cookie);
         if (active is null) return Unauthorized();
 
-        var (oldTokenId, userId, _) = active.Value;
+        Guid oldTokenId = active.Id;
+        int userId = active.UserId;
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
 
-        var (newPlain, newExpires, _) = await _refreshTokens.RotateAsync(oldTokenId, userId, ip, daysToExpire: 14);
+        var newRefreshToken = await _refreshTokens.RotateAsync(new RefreshTokenRotateRequest
+        {
+            OldTokenId = oldTokenId,
+            UserId = userId,
+            IpAddress = ip,
+            UserAgent = Request.Headers.UserAgent.ToString(),
+            DeviceId = Request.Headers["DeviceId"].ToString(),
+            DaysToExpire = 15
+        });
 
         // Cargar usuario para emitir nuevo access token
         var user = await _authService.GetUserByIdAsync(userId);
@@ -76,12 +88,12 @@ public class AuthController : ControllerBase
 
         var newAccess = _tokenGenerator.GenerateToken(user);
 
-        Response.Cookies.Append("refresh_token", newPlain, new CookieOptions
+        Response.Cookies.Append("refresh_token", newRefreshToken.PlainText, new CookieOptions
         {
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Expires = newExpires
+            Expires = newRefreshToken.ExpiresUtc
         });
 
         return Ok(new { Token = newAccess });

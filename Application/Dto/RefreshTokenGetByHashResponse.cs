@@ -3,7 +3,7 @@ namespace MenuSoda.Application.Dto
     public class RefreshTokenGetByHashResponse
     {
         public Guid Id { get; set; }
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         public string TokenHash { get; set; } = null!;
         public DateTime CreatedAtUtc { get; set; }
         public string? CreatedByIp { get; set; }
