@@ -1,107 +1,115 @@
+using System.Data;
 using System.Security.Cryptography;
 using System.Text;
+using Dapper;
 using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Interfaces.Security;
 
 public class DapperRefreshTokenService : IRefreshToken
 {
-    //private readonly string _cs;
     private readonly GenericRepository _genericRepository;
 
     public DapperRefreshTokenService(
-        //IConfiguration cfg,
         GenericRepository genericRepository
     ){
-        //_cs = cfg.GetConnectionString("URL_SERVER")!;
         _genericRepository = genericRepository;
     } 
 
-    public async Task<RefreshTokenCreateResponse> CreateAsync(RefreshTokenCreateRequest request)
+    public async Task<RefreshTokenCreateResponse> CreateAsync(RefreshTokenCreateRequest request, CancellationToken ct)
     {
-        //using var conn = new NpgsqlConnection(_cs);
         var plain = GenerateToken(64);
         var hash = Hash(plain);
 
-        var res = await _genericRepository.ExecuteProcedureWithOutputsAsync<(Guid Id, DateTime ExpiresAtUtc)>(
+        var parameters = new DynamicParameters();
+
+        // IN
+        parameters.Add("p_usuid", request.UserId, DbType.Int32);
+        parameters.Add("p_tokenhash", hash, DbType.String);
+        parameters.Add("p_ipcre", request.IpAddress, DbType.String);
+        parameters.Add("p_useragent", request.UserAgent, DbType.String);
+        parameters.Add("p_deviceid", request.DeviceId, DbType.String);
+        parameters.Add("p_geolat", request.GeoLat, DbType.Decimal);
+        parameters.Add("p_geolon", request.GeoLon, DbType.Decimal);
+        parameters.Add("p_days_to_expire", request.DaysToExpire, DbType.Int32);
+
+        // OUT (PostgreSQL PROCEDURE)
+        parameters.Add("p_id", dbType: DbType.Guid, direction: ParameterDirection.Output);
+        parameters.Add("p_fecexputc", dbType: DbType.DateTime, direction: ParameterDirection.Output);
+        
+        await _genericRepository.CallProcedureAsync(
             "seguridad.sp_create_refreshtoken",
-            new { 
-                p_usuid = request.UserId,
-                p_tokenhash = hash, 
-                p_ipcre = request.IpAddress, 
-                p_useragent = request.UserAgent, 
-                p_deviceid = request.DeviceId, 
-                p_geolat = request.GeoLat, 
-                p_geolon = request.GeoLon, 
-                p_days_to_expire = request.DaysToExpire 
-                }
+            parameters,
+            ct
         );
 
-        /*var res = await conn.QuerySingleAsync<(Guid Id, DateTime ExpiresAtUtc)>(
-            "seguridad.sp_create_refreshtoken",
-            new { 
-                p_usuid = request.UserId,
-                p_tokenhash = hash, 
-                p_ipcre = request.IpAddress, 
-                p_useragent = request.UserAgent, 
-                p_deviceid = request.DeviceId, 
-                p_geolat = request.GeoLat, 
-                p_geolon = request.GeoLon, 
-                p_days_to_expire = request.DaysToExpire 
-                },
-            commandType: CommandType.StoredProcedure);
-        */
         return new RefreshTokenCreateResponse { 
             PlainText = plain,
-            ExpiresUtc = res.ExpiresAtUtc, 
-            TokenId = res.Id 
+            ExpiresUtc = parameters.Get<DateTime>("p_fecexputc"), 
+            TokenId = parameters.Get<Guid>("p_id")
         };
     }
 
-    public async Task<RefreshTokenGetByHashResponse?> GetActiveByPlainAsync(string plainText)
+    public async Task<RefreshTokenGetByHashResponse?> GetActiveByPlainAsync(string plainText, CancellationToken ct)
     {
-        //using var conn = new NpgsqlConnection(_cs);
         var hash = Hash(plainText);
         return await _genericRepository.GetSingleByProcedureAsync<RefreshTokenGetByHashResponse>(
             "seguridad.sp_get_active_refreshtoken_hash",
-            new { p_hash = hash }
+            new { p_hash = hash }, 
+            ct
         );
-        /*return await conn.QueryFirstOrDefaultAsync<RefreshTokenGetByHashResponse>(
-            "dbo.sp_RefreshToken_GetByHash",
-            new { TokenHash = hash },
-            commandType: CommandType.StoredProcedure);*/
     }
 
-    public async Task RevokeAllActiveAsync(int userId, string? ip)
+    public async Task<RefreshTokenGetByHashResponse?> GetByPlainAsync(string plainText, CancellationToken ct)
+    {
+        var hash = Hash(plainText);
+        return await _genericRepository.GetSingleByProcedureAsync<RefreshTokenGetByHashResponse>(
+            "seguridad.sp_get_refreshtoken_hash",
+            new { p_hash = hash }, 
+            ct
+        );
+    }
+
+    public async Task RevokeAllActiveAsync(int userId, string? ip, CancellationToken ct)
     {
         await _genericRepository.ExecuteNonQueryProcedureAsync(
-            "seguridad.sp_RefreshToken_RevokeAll",
-            new { p_usuid = userId, p_ip = ip }
+            "seguridad.sp_revoke_all_refreshtoken",
+            new { p_usuid = userId, p_ip = ip },
+            ct
         );
     }
 
-    public async Task<RefreshTokenRotateResponse> RotateAsync(RefreshTokenRotateRequest request)
+    public async Task<RefreshTokenRotateResponse> RotateAsync(RefreshTokenRotateRequest request, CancellationToken ct)
     {
         var newPlain = GenerateToken(64);
         var newHash = Hash(newPlain);
 
-        var res = await _genericRepository.ExecuteProcedureWithOutputsAsync<(Guid Id, DateTime ExpiresAtUtc)>(
-            "seguridad.sp_rotate_refreshtoken",
-            new { 
-                p_oldid = request.OldTokenId, 
-                p_usuid = request.UserId, 
-                p_tokenhash = newHash, 
-                p_ipcre = request.IpAddress, 
-                p_useragent = request.UserAgent, 
-                p_deviceid = request.DeviceId, 
-                p_geolat = request.GeoLat, 
-                p_geolon = request.GeoLon, 
-                p_days_to_expire = request.DaysToExpire 
-                });
+        var parameters = new DynamicParameters();
 
-        return new RefreshTokenRotateResponse{ 
-            PlainText = newPlain, 
-            ExpiresUtc = res.ExpiresAtUtc, 
-            TokenId = res.Id 
+        // IN
+        parameters.Add("p_oldid", request.OldTokenId, DbType.Guid);
+        parameters.Add("p_usuid", request.UserId, DbType.Int32);
+        parameters.Add("p_tokenhash", newHash, DbType.String);
+        parameters.Add("p_ipcre", request.IpAddress, DbType.String);
+        parameters.Add("p_useragent", request.UserAgent, DbType.String);
+        parameters.Add("p_deviceid", request.DeviceId, DbType.String);
+        parameters.Add("p_geolat", request.GeoLat, DbType.Decimal);
+        parameters.Add("p_geolon", request.GeoLon, DbType.Decimal);
+        parameters.Add("p_days_to_expire", request.DaysToExpire, DbType.Int32);
+
+        parameters.Add("p_id", dbType: DbType.Guid, direction: ParameterDirection.Output);
+        parameters.Add("p_fecexputc", dbType: DbType.DateTime, direction: ParameterDirection.Output);
+
+        await _genericRepository.CallProcedureAsync(
+            "seguridad.sp_rotate_refreshtoken",
+            parameters,
+            ct
+        );
+
+        return new RefreshTokenRotateResponse
+        {
+            PlainText = newPlain,
+            TokenId = parameters.Get<Guid>("p_id"),
+            ExpiresUtc = parameters.Get<DateTime>("p_fecexputc")
         };
     }
 

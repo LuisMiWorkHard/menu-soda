@@ -8,10 +8,12 @@ using Microsoft.IdentityModel.Tokens;
 public class JwtTokenGenerator : ITokenGenerator
 {
     private readonly string _secret;
+    private readonly int _tokenDurationMinutes;
 
-    public JwtTokenGenerator(string secret)
+    public JwtTokenGenerator(string secret, string tokenDuration)
     {
         _secret = secret;
+        _tokenDurationMinutes = int.Parse(tokenDuration);
     }
     // Implementation of JWT token generation
     public string GenerateToken(User user)
@@ -30,7 +32,7 @@ public class JwtTokenGenerator : ITokenGenerator
             issuer: "MenuSodaAPI",
             audience: "MenuSodaClients",
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(30),
+            expires: DateTime.UtcNow.AddMinutes(_tokenDurationMinutes),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

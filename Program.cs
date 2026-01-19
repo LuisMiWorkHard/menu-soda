@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using MenuSoda.Application.Options;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +22,14 @@ builder.Services.AddScoped<ITokenGenerator>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
     var secret = config.GetSection("Jwt:Secret").Value!;
-    return new JwtTokenGenerator(secret);
+    if (string.IsNullOrWhiteSpace(secret))
+        throw new InvalidOperationException("Falta configuración Jwt:Secret.");
+
+    var tokenDuration = config.GetSection("Jwt:AccessTokenMinutes").Value!;
+    if (string.IsNullOrWhiteSpace(tokenDuration))
+        throw new InvalidOperationException("Falta configuración Jwt:AccessTokenMinutes.");
+
+    return new JwtTokenGenerator(secret, tokenDuration);
 });
 
 // Configurar autenticación JWT
@@ -44,7 +53,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UtilService>();
 
+builder.Services.AddScoped<IRefreshToken, DapperRefreshTokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddControllers();
@@ -60,6 +71,10 @@ builder.Services.AddProblemDetails(options =>
     };
 });
 
+// Configura opciones fuertemente tipadas desde appsettings.json
+builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
+
+// Configura respuesta personalizada para validación de modelos
 builder.Services.Configure<ApiBehaviorOptions>(o =>
 {
     o.InvalidModelStateResponseFactory = ctx =>
@@ -80,6 +95,17 @@ builder.Services.Configure<ApiBehaviorOptions>(o =>
     };
 });
 
+// Para obtener IP real cuando hay un proxy adelante
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // En hosting tipo Railway suele variar la IP del proxy; para que funcione:
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 // Manejador global de excepciones
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -94,15 +120,18 @@ if (app.Environment.IsDevelopment())
 // Activa el pipeline de manejo de excepciones
 app.UseExceptionHandler();
 
+app.UseForwardedHeaders();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
 }
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
 // Valida headers requeridos para todas las solicitudes
 app.UseMiddleware<RequiredHeadersMiddleware>();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

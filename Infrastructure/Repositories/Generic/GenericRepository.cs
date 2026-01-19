@@ -1,4 +1,5 @@
 using System.Data;
+using System.Text.RegularExpressions;
 using Dapper;
 using MenuSoda.Infrastructure.Persistence;
 using Npgsql;
@@ -15,85 +16,95 @@ public class GenericRepository
     public Task<T?> GetSingleByProcedureAsync<T>(
         string procedureName,
         object procedureParameters,
+        CancellationToken ct,
         string cursorName = "result_cur",
         NpgsqlTransaction? transaction = null)
     {
-        return ExecuteProcedureAsync<T>(
+        return ExecuteProcedureAsync(
             procedureParameters,
             async (conn, tx, parameters) =>
             {
-                // Añadir cursor
-                parameters.Add("p_cur", cursorName);
+                var safeCursor = ResolveCursorName(cursorName);
 
-                var propertyInfos = procedureParameters.GetType().GetProperties();
-                var allParameterNames = propertyInfos.Select(p => p.Name).Concat(new[] { "p_cur" });
-                var placeholders = allParameterNames.Select(n => n == "p_cur" ? "@p_cur::refcursor" : "@" + n);
+                if (!parameters.ParameterNames.Contains("p_cur"))
+                    parameters.Add("p_cur", safeCursor);
 
-                var callSql = $"CALL {procedureName}({string.Join(", ", placeholders)})";
-                await conn.ExecuteAsync(callSql, parameters, tx);
+                var names = parameters.ParameterNames
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
 
-                var fetchSql = $"FETCH ALL FROM {cursorName};";
-                return await conn.QuerySingleOrDefaultAsync<T>(
-                    new CommandDefinition(fetchSql, transaction: tx)
-                );
+                var callSql = BuildCallSqlNamedArgs(procedureName, names);
+
+                await conn.ExecuteAsync(new CommandDefinition(callSql, parameters, tx, cancellationToken: ct));
+
+                var result = await conn.QuerySingleOrDefaultAsync<T>(
+                    new CommandDefinition($"FETCH ALL FROM \"{safeCursor}\";", transaction: tx, cancellationToken: ct));
+
+                await conn.ExecuteAsync(new CommandDefinition($"CLOSE \"{safeCursor}\";", transaction: tx, cancellationToken: ct));
+
+                return result;
             },
+            ct,
             transaction
         );
     }
 
     public Task<IEnumerable<T>?> GetListByProcedureAsync<T>(
-    string procedureName,
-    object procedureParameters,
-    string cursorName = "result_cur",
-    NpgsqlTransaction? transaction = null)
+        string procedureName,
+        object procedureParameters,
+        CancellationToken ct,
+        string cursorName = "result_cur",
+        NpgsqlTransaction? transaction = null)
     {
-        return ExecuteProcedureAsync<IEnumerable<T>>(
+        return ExecuteProcedureAsync(
             procedureParameters,
             async (conn, tx, parameters) =>
             {
-                // Añadir cursor
-                parameters.Add("p_cur", cursorName);
+                var safeCursor = ResolveCursorName(cursorName);
 
-                var propertyInfos = procedureParameters.GetType().GetProperties();
-                var allParameterNames = propertyInfos.Select(p => p.Name).Concat(new[] { "p_cur" });
-                var placeholders = allParameterNames.Select(n => n == "p_cur" ? "@p_cur::refcursor" : "@" + n);
+                if (!parameters.ParameterNames.Contains("p_cur"))
+                    parameters.Add("p_cur", safeCursor);
 
-                // Llamada al procedure
-                var callSql = $"CALL {procedureName}({string.Join(", ", placeholders)})";
-                await conn.ExecuteAsync(callSql, parameters, tx);
+                var names = parameters.ParameterNames
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
 
-                // Fetch del cursor → devuelve varias filas
-                var fetchSql = $"FETCH ALL FROM {cursorName};";
+                var callSql = BuildCallSqlNamedArgs(procedureName, names);
+
+                await conn.ExecuteAsync(new CommandDefinition(callSql, parameters, tx, cancellationToken: ct));
+
                 var result = await conn.QueryAsync<T>(
-                    new CommandDefinition(fetchSql, transaction: tx)
-                );
+                    new CommandDefinition($"FETCH ALL FROM \"{safeCursor}\";", transaction: tx, cancellationToken: ct));
+
+                await conn.ExecuteAsync(new CommandDefinition($"CLOSE \"{safeCursor}\";", transaction: tx, cancellationToken: ct));
 
                 return result;
             },
+            ct,
             transaction
         );
     }
 
-    public Task<T?> ExecuteProcedureWithOutputsAsync<T>(
+        public Task CallProcedureAsync(
         string procedureName,
-        object procedureParameters,
+        DynamicParameters parameters,
+        CancellationToken ct,
         NpgsqlTransaction? transaction = null)
     {
-        return ExecuteProcedureAsync<T>(
-            procedureParameters,
-            async (conn, tx, parameters) =>
+        return ExecuteProcedureAsync<int>(
+            parameters,
+            async (conn, tx, p) =>
             {
-                var propertyInfos = procedureParameters.GetType().GetProperties();
-                var placeholders = propertyInfos.Select(p => "@" + p.Name);
-                var callSql = $"CALL {procedureName}({string.Join(", ", placeholders)})";
+                var names = p.ParameterNames
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
 
-                // Como hay múltiples OUT, usamos QuerySingleOrDefaultAsync<T>
-                var result = await conn.QuerySingleOrDefaultAsync<T>(
-                    new CommandDefinition(callSql, parameters, transaction: tx)
-                );
+                var callSql = BuildCallSqlNamedArgs(procedureName, names);
 
-                return result;
+                return await conn.ExecuteAsync(new CommandDefinition(
+                    callSql, p, transaction: tx, cancellationToken: ct));
             },
+            ct,
             transaction
         );
     }
@@ -101,23 +112,24 @@ public class GenericRepository
     public Task<int> ExecuteNonQueryProcedureAsync(
         string procedureName,
         object procedureParameters,
+        CancellationToken ct,
         NpgsqlTransaction? transaction = null)
     {
         return ExecuteProcedureAsync<int>(
             procedureParameters,
             async (conn, tx, parameters) =>
             {
-                var propertyInfos = procedureParameters.GetType().GetProperties();
-                var placeholders = propertyInfos.Select(p => "@" + p.Name);
-                var callSql = $"CALL {procedureName}({string.Join(", ", placeholders)})";
+                var names = parameters.ParameterNames
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
 
-                // Ejecuta y devuelve filas afectadas
-                var affectedRows = await conn.ExecuteAsync(
-                    new CommandDefinition(callSql, parameters, transaction: tx)
+                var callSql = BuildCallSqlNamedArgs(procedureName, names);
+
+                return await conn.ExecuteAsync(
+                    new CommandDefinition(callSql, parameters, transaction: tx, cancellationToken: ct)
                 );
-
-                return affectedRows;
             },
+            ct,
             transaction
         );
     }
@@ -125,54 +137,67 @@ public class GenericRepository
     private async Task<T?> ExecuteProcedureAsync<T>(
         object procedureParameters,
         Func<NpgsqlConnection, NpgsqlTransaction, DynamicParameters, Task<T?>> executor,
+        CancellationToken ct,
         NpgsqlTransaction? transaction = null)
     {
-        bool ownConnection = false;
-        NpgsqlConnection? connection = null;
-        NpgsqlTransaction? tx = transaction;
+        var ownConnection = transaction == null;
+        await using var conn = ownConnection ? (NpgsqlConnection)_context.CreateConnection() : transaction!.Connection!;
+        var tx = transaction;
 
-        if (transaction == null)
+        if (ownConnection)
         {
-            connection = (NpgsqlConnection?)_context.CreateConnection();
-            if (connection is null)
-                throw new InvalidOperationException("Fallo al crear la conexión a la base de datos.");
-            await connection.OpenAsync();
-            tx = await connection.BeginTransactionAsync();
-            ownConnection = true;
-        }
-        else
-        {
-            connection = transaction.Connection!;
+            await conn.OpenAsync(ct);
+            tx = await conn.BeginTransactionAsync(ct);
         }
 
         try
         {
-            // Construye parámetros dinámicos
-            var parameters = new DynamicParameters(procedureParameters);
-            var propertyInfos = procedureParameters.GetType().GetProperties();
-            foreach (var prop in propertyInfos)
-            {
-                parameters.Add(prop.Name, prop.GetValue(procedureParameters));
-            }
+            var parameters = procedureParameters as DynamicParameters ?? new DynamicParameters(procedureParameters);
 
-            // Ejecuta la parte variable
-            var result = await executor(connection!, tx!, parameters);
+            var result = await executor(conn, tx!, parameters);
 
-            if (ownConnection && tx != null)
-                await tx.CommitAsync();
+            if (ownConnection)
+                await tx!.CommitAsync(ct);
 
             return result;
         }
         catch
         {
-            if (ownConnection && tx != null)
-                await tx.RollbackAsync();
+            if (ownConnection)
+                await tx!.RollbackAsync(ct);
             throw;
         }
-        finally
-        {
-            if (ownConnection && connection != null)
-                await connection.DisposeAsync();
-        }
+    }
+
+    private static string BuildCallSqlNamedArgs(string procedureName, IEnumerable<string> parameterNames)
+    {
+        // p_cur necesita castearse a refcursor cuando se usa como argumento nombrado
+        var args = parameterNames.Select(n =>
+            n.Equals("p_cur", StringComparison.OrdinalIgnoreCase)
+                ? $"p_cur => @p_cur::refcursor"
+                : $"{n} => @{n}"
+        );
+
+        return $"CALL {procedureName}({string.Join(", ", args)});";
+    }
+
+    private static string ResolveCursorName(string cursorName)
+    {
+        if (string.IsNullOrWhiteSpace(cursorName) || cursorName.Equals("result_cur", StringComparison.OrdinalIgnoreCase))
+            return $"result_cur_{Guid.NewGuid():N}";
+
+        EnsureSafeCursorName(cursorName);
+        return cursorName;
+    }
+
+    private static string EnsureSafeCursorName(string cursorName)
+    {
+        if (string.IsNullOrWhiteSpace(cursorName))
+            throw new ArgumentException("cursorName inválido.", nameof(cursorName));
+
+        if (!Regex.IsMatch(cursorName, "^[A-Za-z0-9_]+$"))
+            throw new ArgumentException("cursorName contiene caracteres inválidos.", nameof(cursorName));
+
+        return cursorName;
     }
 }

@@ -15,7 +15,7 @@ public class UserRepository : IUserRepository
         _genericRepository = genericRepository;
     }
 
-    public async Task<User?> GetByDocumentAsync(UsuarioGetByDocumentRequest request)
+    public async Task<User?> GetByDocumentAsync(UsuarioGetByDocumentRequest request,  CancellationToken ct)
     {
         return await _genericRepository.GetSingleByProcedureAsync<User>(
             "seguridad.sp_get_usu_tipnumdoc",
@@ -23,7 +23,20 @@ public class UserRepository : IUserRepository
             {
                 p_usutipdoc = request.TipoDocumento,
                 p_usunumdoc = request.NumeroDocumento
-            }
+            },
+            ct
+        );
+    }
+
+    public async Task<User?> GetByIdAsync(UsuarioGetByIdRequest request,  CancellationToken ct)
+    {
+        return await _genericRepository.GetSingleByProcedureAsync<User>(
+            "seguridad.sp_get_usu_id",
+            new
+            {
+                p_usuid = request.Id
+            },
+            ct
         );
     }
 }

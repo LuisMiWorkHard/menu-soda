@@ -1,21 +1,34 @@
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using MenuSoda.Application.Options;
 
 namespace MenuSoda.Infrastructure.Middleware;
 
 public class RequiredHeadersMiddleware
 {
     private readonly RequestDelegate _next;
-    private static readonly string[] Required = ["User-Agent", "DeviceId"];
+    private readonly string[] _required;
 
-    public RequiredHeadersMiddleware(RequestDelegate next)
+    public RequiredHeadersMiddleware(RequestDelegate next, IOptions<AuthOptions> options)
     {
         _next = next;
+        var authOptions = options.Value;
+        _required = new string[]
+        {
+            "User-Agent",
+            authOptions.DeviceIdHeaderName,
+            authOptions.GeoLatHeaderName,
+            authOptions.GeoLonHeaderName
+        }
+        .Where(h => !string.IsNullOrWhiteSpace(h))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
     }
 
     public async Task Invoke(HttpContext context)
     {
-        foreach (var h in Required)
+        foreach (var h in _required)
         {
             if (!context.Request.Headers.TryGetValue(h, out var v) || string.IsNullOrWhiteSpace(v))
             {
