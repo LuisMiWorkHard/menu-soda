@@ -1,7 +1,8 @@
-namespace MenuSoda.Application.Dto
+namespace MenuSoda.Domain.Models.Security
 {
-    public class RefreshTokenCreateRequest
+    public class RefreshTokenRotateRequest
     {
+        public Guid OldTokenId { get; set; }
         public int UserId { get; set; }
         public string? IpAddress { get; set; }
         public string? UserAgent { get; set; }

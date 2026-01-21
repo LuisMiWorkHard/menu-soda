@@ -1,8 +1,10 @@
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Options;
 using MenuSoda.Application.Services;
+using MenuSoda.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
 [ApiController]
@@ -10,12 +12,12 @@ using Microsoft.Extensions.Options;
 public class AuthController : ControllerBase
 {
 
-    private readonly AuthService _authService;
+    private readonly IAuthService _authService;
     private readonly UtilService _utilService;
     private readonly AuthOptions _authOptions;
 
     public AuthController(
-        AuthService authService, 
+        IAuthService authService, 
         UtilService utilService, 
         IOptions<AuthOptions> authOptions)
     {
@@ -25,6 +27,7 @@ public class AuthController : ControllerBase
     }
 
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
@@ -57,6 +60,7 @@ public class AuthController : ControllerBase
     }
 
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh(CancellationToken ct)
     {

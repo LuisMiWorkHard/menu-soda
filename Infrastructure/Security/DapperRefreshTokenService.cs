@@ -2,7 +2,7 @@ using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using Dapper;
-using MenuSoda.Application.Dto;
+using MenuSoda.Domain.Models.Security;
 using MenuSoda.Domain.Interfaces.Security;
 
 public class DapperRefreshTokenService : IRefreshToken

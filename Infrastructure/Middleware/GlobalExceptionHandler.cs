@@ -100,7 +100,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
         UnauthorizedAccessException         => "ERR_NO_AUTORIZADO",
         
-        CustomBusinessValidationException   => "ERR_BUSSNIESS_VALIDATION",
+        CustomBusinessValidationException   => "ERR_BUSINESS_VALIDATION",
 
         _                                   => "ERR_INTERNO"
     };
@@ -127,7 +127,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
         UnauthorizedAccessException         => "No autorizado",
         
-        CustomBusinessValidationException   => "Reglas de negocio insatifichas",
+        CustomBusinessValidationException   => "Reglas de negocio insatisfechas",
 
         _                                   => "Error interno del servidor"
     };

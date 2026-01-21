@@ -1,5 +1,7 @@
 using MenuSoda.Application.Services;
+using MenuSoda.Application.Interfaces;
 using MenuSoda.Domain.Interfaces.Security;
+using MenuSoda.Domain.Interfaces.Repositories;
 using MenuSoda.Infrastructure.Middleware;
 using MenuSoda.Infrastructure.Persistence;
 using MenuSoda.Infrastructure.Security;
@@ -10,6 +12,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MenuSoda.Application.Options;
 using Microsoft.AspNetCore.HttpOverrides;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using MenuSoda.Application.Validators;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,7 +59,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddScoped<AuthService>();
+// Registrar FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<UtilService>();
 
 builder.Services.AddScoped<IRefreshToken, DapperRefreshTokenService>();
@@ -61,6 +72,24 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Rate Limiting para prevenir ataques de fuerza bruta
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    
+    // Política específica para endpoints de autenticación
+    options.AddPolicy("auth", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,              // 5 requests
+                Window = TimeSpan.FromMinutes(1), // por minuto
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0                // Sin cola, rechazar inmediatamente
+            }));
+});
 
 // Habilita ProblemDetails (RFC 7807) y añade traceId a todos
 builder.Services.AddProblemDetails(options =>
@@ -130,6 +159,9 @@ app.UseHttpsRedirection();
 
 // Valida headers requeridos para todas las solicitudes
 app.UseMiddleware<RequiredHeadersMiddleware>();
+
+// Rate limiting para prevenir ataques de fuerza bruta
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

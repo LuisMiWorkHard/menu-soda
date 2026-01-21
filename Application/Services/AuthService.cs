@@ -1,30 +1,36 @@
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Options;
 using MenuSoda.Domain.Interfaces.Security;
+using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Domain.Models.Security;
+using MenuSoda.Domain.Models.Repositories;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MenuSoda.Application.Interfaces;
 
-namespace MenuSoda.Application.Services;
-
-public class AuthService
+public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenGenerator _tokenGenerator;
     private readonly IRefreshToken _refreshTokens;
     private readonly AuthOptions _authOptions;
+    private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         IUserRepository userRepository, 
         IPasswordHasher passwordHasher, 
         ITokenGenerator tokenGenerator, 
         IRefreshToken refreshTokens,
-        IOptions<AuthOptions> authOptions)
+        IOptions<AuthOptions> authOptions,
+        ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _tokenGenerator = tokenGenerator;
         _refreshTokens = refreshTokens;
         _authOptions = authOptions.Value;
+        _logger = logger;
     }
 
     public async Task<LoginResponse> LoginAsync(LoginServiceRequest request, CancellationToken ct)
@@ -37,7 +43,15 @@ public class AuthService
         ct);
 
         if (user == null || !_passwordHasher.Verify(request.Contrasena, user.Usuhash))
+        {
+            _logger.LogWarning(
+                "Login fallido: TipoDoc={TipoDocumento}, NumDoc={NumeroDocumento}, IP={IpAddress}, DeviceId={DeviceId}",
+                request.TipoDocumento, 
+                request.NumeroDocumento, 
+                request.IpAddress, 
+                request.DeviceId);
             throw new UnauthorizedAccessException("Credenciales inválidas.");
+        }
 
         var accessToken = _tokenGenerator.GenerateToken(user);
 
@@ -51,6 +65,12 @@ public class AuthService
             GeoLon = request.Longitud,
             DaysToExpire = _authOptions.RefreshTokenDaysToExpire
         }, ct);
+
+        _logger.LogInformation(
+            "Login exitoso: UserId={UserId}, IP={IpAddress}, DeviceId={DeviceId}",
+            user.Id, 
+            request.IpAddress, 
+            request.DeviceId);
 
         return new LoginResponse
         {

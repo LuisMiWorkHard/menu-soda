@@ -1,4 +1,4 @@
-namespace MenuSoda.Application.Dto
+namespace MenuSoda.Domain.Models.Security
 {
     public class RefreshTokenRotateResponse
     {

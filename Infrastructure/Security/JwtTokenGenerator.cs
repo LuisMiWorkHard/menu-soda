@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using MenuSoda.Domain.Interfaces.Security;
-using MenuSoda.Domain.Users;
+using MenuSoda.Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 
 public class JwtTokenGenerator : ITokenGenerator

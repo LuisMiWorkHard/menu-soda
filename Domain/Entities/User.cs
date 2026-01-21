@@ -1,4 +1,4 @@
-namespace MenuSoda.Domain.Users;
+namespace MenuSoda.Domain.Entities;
 
 public class User
 {

@@ -1,5 +1,7 @@
-using MenuSoda.Application.Dto;
-using MenuSoda.Domain.Users;
+using MenuSoda.Domain.Models.Repositories;
+using MenuSoda.Domain.Entities;
+
+namespace MenuSoda.Domain.Interfaces.Repositories;
 
 public interface IUserRepository
 {

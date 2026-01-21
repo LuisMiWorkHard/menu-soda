@@ -1,5 +1,6 @@
-using MenuSoda.Application.Dto;
-using MenuSoda.Domain.Users;
+using MenuSoda.Domain.Models.Repositories;
+using MenuSoda.Domain.Entities;
+using MenuSoda.Domain.Interfaces.Repositories;
 using MenuSoda.Infrastructure.Persistence;
 
 public class UserRepository : IUserRepository

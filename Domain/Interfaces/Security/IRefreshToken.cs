@@ -1,4 +1,4 @@
-using MenuSoda.Application.Dto;
+using MenuSoda.Domain.Models.Security;
 
 namespace MenuSoda.Domain.Interfaces.Security
 {
