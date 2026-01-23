@@ -9,5 +9,6 @@ namespace MenuSoda.Domain.Interfaces.Security
         Task<RefreshTokenGetByHashResponse?> GetByPlainAsync(string plainText, CancellationToken ct); // trae incluso revocados/expirados
         Task<RefreshTokenRotateResponse> RotateAsync(RefreshTokenRotateRequest request, CancellationToken ct);
         Task RevokeAllActiveAsync(int userId, string? ip, CancellationToken ct);
+        Task RevokeAsync(string plainText, string? ip, CancellationToken ct);
     }
 }

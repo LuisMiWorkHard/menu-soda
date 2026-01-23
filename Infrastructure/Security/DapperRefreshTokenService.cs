@@ -32,9 +32,9 @@ public class DapperRefreshTokenService : IRefreshToken
         parameters.Add("p_geolon", request.GeoLon, DbType.Decimal);
         parameters.Add("p_days_to_expire", request.DaysToExpire, DbType.Int32);
 
-        // OUT (PostgreSQL PROCEDURE)
-        parameters.Add("p_id", dbType: DbType.Guid, direction: ParameterDirection.Output);
-        parameters.Add("p_fecexputc", dbType: DbType.DateTime, direction: ParameterDirection.Output);
+        // INOUT (PostgreSQL PROCEDURE needs InputOutput for Npgsql to allow named args in CALL)
+        parameters.Add("p_id", dbType: DbType.Guid, direction: ParameterDirection.InputOutput);
+        parameters.Add("p_fecexputc", dbType: DbType.DateTime, direction: ParameterDirection.InputOutput);
         
         await _genericRepository.CallProcedureAsync(
             "seguridad.sp_create_refreshtoken",
@@ -78,6 +78,15 @@ public class DapperRefreshTokenService : IRefreshToken
         );
     }
 
+    public async Task RevokeAsync(string plainText, string? ip, CancellationToken ct)
+    {
+        await _genericRepository.ExecuteNonQueryProcedureAsync(
+            "seguridad.sp_revoke_refreshtoken",
+            new { p_hash = Hash(plainText), p_ip = ip },
+            ct
+        );
+    }
+
     public async Task<RefreshTokenRotateResponse> RotateAsync(RefreshTokenRotateRequest request, CancellationToken ct)
     {
         var newPlain = GenerateToken(64);
@@ -96,8 +105,8 @@ public class DapperRefreshTokenService : IRefreshToken
         parameters.Add("p_geolon", request.GeoLon, DbType.Decimal);
         parameters.Add("p_days_to_expire", request.DaysToExpire, DbType.Int32);
 
-        parameters.Add("p_id", dbType: DbType.Guid, direction: ParameterDirection.Output);
-        parameters.Add("p_fecexputc", dbType: DbType.DateTime, direction: ParameterDirection.Output);
+        parameters.Add("p_id", dbType: DbType.Guid, direction: ParameterDirection.InputOutput);
+        parameters.Add("p_fecexputc", dbType: DbType.DateTime, direction: ParameterDirection.InputOutput);
 
         await _genericRepository.CallProcedureAsync(
             "seguridad.sp_rotate_refreshtoken",

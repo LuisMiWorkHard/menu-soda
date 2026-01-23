@@ -26,13 +26,10 @@ public class GenericRepository
             {
                 var safeCursor = ResolveCursorName(cursorName);
 
-                if (!parameters.ParameterNames.Contains("p_cur"))
+                if (!parameters.ParameterNames.Any(n => n.Equals("p_cur", StringComparison.OrdinalIgnoreCase)))
                     parameters.Add("p_cur", safeCursor);
 
-                var names = parameters.ParameterNames
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
+                var names = GetParameterNames(parameters, procedureParameters);
                 var callSql = BuildCallSqlNamedArgs(procedureName, names);
 
                 await conn.ExecuteAsync(new CommandDefinition(callSql, parameters, tx, cancellationToken: ct));
@@ -62,13 +59,10 @@ public class GenericRepository
             {
                 var safeCursor = ResolveCursorName(cursorName);
 
-                if (!parameters.ParameterNames.Contains("p_cur"))
+                if (!parameters.ParameterNames.Any(n => n.Equals("p_cur", StringComparison.OrdinalIgnoreCase)))
                     parameters.Add("p_cur", safeCursor);
 
-                var names = parameters.ParameterNames
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
+                var names = GetParameterNames(parameters, procedureParameters);
                 var callSql = BuildCallSqlNamedArgs(procedureName, names);
 
                 await conn.ExecuteAsync(new CommandDefinition(callSql, parameters, tx, cancellationToken: ct));
@@ -179,6 +173,24 @@ public class GenericRepository
         );
 
         return $"CALL {procedureName}({string.Join(", ", args)});";
+    }
+
+    private static string[] GetParameterNames(DynamicParameters parameters, object? template)
+    {
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        
+        // Parámetros agregados manualmente
+        foreach (var name in parameters.ParameterNames)
+            names.Add(name);
+
+        // Si es un objeto anónimo o clase, Dapper lo usa internamente pero no siempre lo expone en ParameterNames
+        if (template != null && template is not DynamicParameters)
+        {
+            foreach (var prop in template.GetType().GetProperties())
+                names.Add(prop.Name);
+        }
+
+        return names.ToArray();
     }
 
     private static string ResolveCursorName(string cursorName)

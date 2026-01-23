@@ -5,6 +5,7 @@ using MenuSoda.Domain.Interfaces.Repositories;
 using MenuSoda.Infrastructure.Middleware;
 using MenuSoda.Infrastructure.Persistence;
 using MenuSoda.Infrastructure.Security;
+using MenuSoda.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -68,6 +69,8 @@ builder.Services.AddScoped<UtilService>();
 
 builder.Services.AddScoped<IRefreshToken, DapperRefreshTokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IEntradaRepository, EntradaRepository>();
+builder.Services.AddScoped<IEntradaService, EntradaService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

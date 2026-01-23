@@ -2,6 +2,8 @@ using MenuSoda.Domain.Models.Repositories;
 using MenuSoda.Domain.Entities;
 using MenuSoda.Domain.Interfaces.Repositories;
 using MenuSoda.Infrastructure.Persistence;
+using Dapper;
+using System.Data;
 
 public class UserRepository : IUserRepository
 {
@@ -37,6 +39,21 @@ public class UserRepository : IUserRepository
             {
                 p_usuid = request.Id
             },
+            ct
+        );
+    }
+
+    public async Task ActualizarBloqueoAsync(User usuario, CancellationToken ct)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("p_id", usuario.Id, DbType.Int32);
+        parameters.Add("p_usuintfall", usuario.Usuintfall, DbType.Int32);
+        // Enviamos como string ISO para evitar problemas de mapeo de tipos con Npgsql
+        parameters.Add("p_usufecblo", usuario.Usufecblo?.ToString("yyyy-MM-dd HH:mm:ss.ffffffZ"), DbType.String); 
+
+        await _genericRepository.CallProcedureAsync(
+            "seguridad.sp_update_usu_bloqueo",
+            parameters,
             ct
         );
     }

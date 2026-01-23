@@ -39,18 +39,42 @@ public class AuthService : IAuthService
         {
             TipoDocumento = request.TipoDocumento,
             NumeroDocumento = request.NumeroDocumento
-        },
-        ct);
+        }, ct);
 
-        if (user == null || !_passwordHasher.Verify(request.Contrasena, user.Usuhash))
+        // 1. Verificar si el usuario existe
+        if (user == null)
         {
-            _logger.LogWarning(
-                "Login fallido: TipoDoc={TipoDocumento}, NumDoc={NumeroDocumento}, IP={IpAddress}, DeviceId={DeviceId}",
-                request.TipoDocumento, 
-                request.NumeroDocumento, 
-                request.IpAddress, 
-                request.DeviceId);
             throw new UnauthorizedAccessException("Credenciales inválidas.");
+        }
+
+        // 2. Verificar bloqueo de cuenta
+        if (user.Usufecblo.HasValue && user.Usufecblo > DateTime.UtcNow)
+        {
+            var remaining = user.Usufecblo.Value - DateTime.UtcNow;
+            throw new UnauthorizedAccessException($"Cuenta bloqueada. Intente de nuevo en {Math.Ceiling(remaining.TotalMinutes)} minutos.");
+        }
+
+        // 3. Verificar contraseña
+        if (!_passwordHasher.Verify(request.Contrasena, user.Usuhash))
+        {
+            user.Usuintfall++;
+            if (user.Usuintfall >= 5)
+            {
+                user.Usufecblo = DateTime.UtcNow.AddMinutes(15);
+                _logger.LogWarning("Cuenta bloqueada por múltiples intentos: User {UserId}", user.Id);
+            }
+            
+            await _userRepository.ActualizarBloqueoAsync(user, ct);
+            
+            throw new UnauthorizedAccessException("Credenciales inválidas.");
+        }
+
+        // 4. Login exitoso: Resetear contadores
+        if (user.Usuintfall > 0 || user.Usufecblo.HasValue)
+        {
+            user.Usuintfall = 0;
+            user.Usufecblo = null;
+            await _userRepository.ActualizarBloqueoAsync(user, ct);
         }
 
         var accessToken = _tokenGenerator.GenerateToken(user);
@@ -84,12 +108,37 @@ public class AuthService : IAuthService
         RefreshServiceRequest request,
         CancellationToken ct)
     {
-        var active = await _refreshTokens.GetActiveByPlainAsync(request.RefreshToken, ct) ?? throw new UnauthorizedAccessException("Token de refresco inválido.");
+        // Traer token (incluso si está revocado para detectar fraude)
+        var tokenInfo = await _refreshTokens.GetByPlainAsync(request.RefreshToken, ct) 
+                        ?? throw new UnauthorizedAccessException("Token de refresco inexistente.");
+
+        // 1. Verificar si el token ya fue revocado o usado (ReplacedByTokenId != null o RevokedAtUtc != null)
+        if (tokenInfo.RevokedAtUtc.HasValue || tokenInfo.ReplacedByTokenId.HasValue)
+        {
+            // DETECCIÓN DE REUTILIZACIÓN: Posible robo de token.
+            // Revocamos todas las sesiones del usuario por seguridad.
+            await _refreshTokens.RevokeAllActiveAsync(tokenInfo.UserId, request.IpAddress, ct);
+            _logger.LogCritical("Intento de reutilización de token detectado. Todas las sesiones revocadas para UserId={UserId}", tokenInfo.UserId);
+            throw new UnauthorizedAccessException("Token de refresco inválido (reutilización detectada).");
+        }
+
+        // 2. Verificar expiración
+        if (tokenInfo.ExpiresAtUtc < DateTime.UtcNow)
+        {
+            throw new UnauthorizedAccessException("Token de refresco expirado.");
+        }
+
+        // 3. Vincular a DeviceId (Binding)
+        if (tokenInfo.DeviceId != request.DeviceId)
+        {
+            _logger.LogWarning("Intento de refresh desde dispositivo diferente. TokenDeviceId={Original}, RequestDeviceId={Current}", tokenInfo.DeviceId, request.DeviceId);
+            throw new UnauthorizedAccessException("El token no pertenece a este dispositivo.");
+        }
         
         var rotated = await _refreshTokens.RotateAsync(new RefreshTokenRotateRequest
         {
-            OldTokenId = active.Id,
-            UserId = active.UserId,
+            OldTokenId = tokenInfo.Id,
+            UserId = tokenInfo.UserId,
             IpAddress = request.IpAddress,
             UserAgent = request.UserAgent,
             DeviceId = request.DeviceId,
@@ -100,7 +149,7 @@ public class AuthService : IAuthService
 
         var user = await _userRepository.GetByIdAsync(new UsuarioGetByIdRequest
         {
-            Id = active.UserId
+            Id = tokenInfo.UserId
         }, ct) ?? throw new UnauthorizedAccessException("Usuario no encontrado.");
         
         var accessToken = _tokenGenerator.GenerateToken(user);
@@ -115,10 +164,10 @@ public class AuthService : IAuthService
 
     public async Task LogoutAsync(LogoutServiceRequest request, CancellationToken ct)
     {
-        var token = await _refreshTokens.GetByPlainAsync(request.RefreshToken, ct);
-        if (token != null)
-        {
-            await _refreshTokens.RevokeAllActiveAsync(token.UserId, request.IpAddress, ct);
-        }
+        if (string.IsNullOrEmpty(request.RefreshToken)) return;
+
+        // Revocamos específicamente este token
+        await _refreshTokens.RevokeAsync(request.RefreshToken, request.IpAddress, ct);
+        _logger.LogInformation("Token revocado exitosamente via Logout.");
     }
 }

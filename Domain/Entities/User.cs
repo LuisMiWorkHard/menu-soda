@@ -22,4 +22,6 @@ public class User
     public string? Fecmod { get; set; }
     public string? Usumod { get; set; }
     public string Usuhash { get; set; } = "";
+    public int Usuintfall { get; set; }
+    public DateTime? Usufecblo { get; set; }
 }
