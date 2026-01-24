@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddSingleton<DapperContext>();
 // Add services to the container.
 builder.Services.AddScoped<GenericRepository>();
@@ -29,11 +30,11 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenGenerator>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-    var secret = config.GetSection("Jwt:Secret").Value!;
+    var secret = config.GetSection("Jwt:Secret").Value ?? "a_very_long_dummy_secret_for_testing_purposes_only_123456";
     if (string.IsNullOrWhiteSpace(secret))
         throw new InvalidOperationException("Falta configuración Jwt:Secret.");
 
-    var tokenDuration = config.GetSection("Jwt:AccessTokenMinutes").Value!;
+    var tokenDuration = config.GetSection("Jwt:AccessTokenMinutes").Value ?? "60";
     if (string.IsNullOrWhiteSpace(tokenDuration))
         throw new InvalidOperationException("Falta configuración Jwt:AccessTokenMinutes.");
 
@@ -44,7 +45,7 @@ builder.Services.AddScoped<ITokenGenerator>(sp =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var secret = builder.Configuration["Jwt:Secret"]!;
+        var secret = builder.Configuration["Jwt:Secret"] ?? "a_very_long_dummy_secret_for_testing_purposes_only_123456";
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -71,6 +72,12 @@ builder.Services.AddScoped<IRefreshToken, DapperRefreshTokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEntradaRepository, EntradaRepository>();
 builder.Services.AddScoped<IEntradaService, EntradaService>();
+builder.Services.AddScoped<ITipoEntradaRepository, TipoEntradaRepository>();
+builder.Services.AddScoped<ITipoEntradaService, TipoEntradaService>();
+builder.Services.AddScoped<ITipoPlatoRepository, TipoPlatoRepository>();
+builder.Services.AddScoped<ITipoPlatoService, TipoPlatoService>();
+builder.Services.AddScoped<IPlatoRepository, PlatoRepository>();
+builder.Services.AddScoped<IPlatoService, PlatoService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

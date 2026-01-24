@@ -5,41 +5,42 @@ using MenuSoda.Infrastructure.Persistence;
 
 namespace MenuSoda.Infrastructure.Repositories;
 
-public class EntradaRepository : IEntradaRepository
+public class PlatoRepository : IPlatoRepository
 {
     private readonly GenericRepository _genericRepository;
 
-    public EntradaRepository(GenericRepository genericRepository)
+    public PlatoRepository(GenericRepository genericRepository)
     {
         _genericRepository = genericRepository;
     }
 
-    public async Task<Entrada?> GetByIdAsync(EntradaGetByIdRequest request, CancellationToken ct)
+    public async Task<Plato?> GetByIdAsync(int id, CancellationToken ct)
     {
-        return await _genericRepository.GetSingleByProcedureAsync<Entrada>(
-            "menusoda.sp_get_entrada_id",
-            new { p_id = request.Id },
+        return await _genericRepository.GetSingleByProcedureAsync<Plato>(
+            "menusoda.sp_get_plato_id",
+            new { p_id = id },
             ct
         );
     }
 
-    public async Task<IEnumerable<Entrada>?> GetListAsync(EntradaGetListRequest request, CancellationToken ct)
+    public async Task<IEnumerable<Plato>?> GetListAsync(string? nombre, CancellationToken ct)
     {
-        return await _genericRepository.GetListByProcedureAsync<Entrada>(
-            "menusoda.sp_get_entrada_list",
-            new { p_entdes = request.Entdes },
+        return await _genericRepository.GetListByProcedureAsync<Plato>(
+            "menusoda.sp_get_plato_list",
+            new { p_planom = nombre },
             ct
         );
     }
 
-    public async Task<int> CreateAsync(EntradaInsertRequest request, CancellationToken ct)
+    public async Task<int> CreateAsync(PlatoInsertRequest request, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
-            "menusoda.sp_ins_entrada",
+            "menusoda.sp_ins_plato",
             new 
             { 
-                p_entdes = request.Entdes, 
-                p_codtipent = request.Codtipent,
+                p_planom = request.Planom,
+                p_plades = request.Plades,
+                p_codtippla = request.Codtippla,
                 p_usureg = request.Usureg 
             },
             ct
@@ -47,15 +48,16 @@ public class EntradaRepository : IEntradaRepository
         return result?.id ?? 0;
     }
 
-    public async Task<int> UpdateAsync(EntradaUpdateRequest request, CancellationToken ct)
+    public async Task<int> UpdateAsync(PlatoUpdateRequest request, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
-            "menusoda.sp_upd_entrada",
+            "menusoda.sp_upd_plato",
             new 
             { 
                 p_id = request.Id,
-                p_entdes = request.Entdes, 
-                p_codtipent = request.Codtipent,
+                p_planom = request.Planom,
+                p_plades = request.Plades,
+                p_codtippla = request.Codtippla,
                 p_codest = request.Codest,
                 p_usumod = request.Usumod
             },
@@ -67,7 +69,7 @@ public class EntradaRepository : IEntradaRepository
     public async Task<int> DeleteAsync(int id, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
-            "menusoda.sp_del_entrada",
+            "menusoda.sp_del_plato",
             new { p_id = id },
             ct
         );

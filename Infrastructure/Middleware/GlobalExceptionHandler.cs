@@ -43,7 +43,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             OperationCanceledException         => StatusCodes.Status408RequestTimeout,
 
             UnauthorizedAccessException        => StatusCodes.Status401Unauthorized,
-
+            Npgsql.PostgresException pgEx when pgEx.SqlState == "P0001" => StatusCodes.Status400BadRequest,
             CustomBusinessValidationException  => StatusCodes.Status422UnprocessableEntity,
 
             _                                  => StatusCodes.Status500InternalServerError
@@ -60,14 +60,17 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             instance: httpContext.Request.Path
         );
 
-        if (_env.IsDevelopment())
+        if (exception is Npgsql.PostgresException pgValEx && pgValEx.SqlState == "P0001")
+        {
+            problem.Detail = pgValEx.MessageText;
+        }
+        else if (_env.IsDevelopment())
         {
             problem.Detail = status == StatusCodes.Status500InternalServerError
                 ? $"{exception.GetType().Name}: {exception.Message} - {exception.InnerException?.Message}"
                 : exception.Message;
         }
-
-        if (!_env.IsDevelopment())
+        else
         {
             problem.Detail = MapProductionDetail(exception, status);
         }
@@ -99,7 +102,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         OperationCanceledException          => "ERR_TIMEOUT",
 
         UnauthorizedAccessException         => "ERR_NO_AUTORIZADO",
-        
+        Npgsql.PostgresException pgEx when pgEx.SqlState == "P0001" => "ERR_BAD_REQUEST",
         CustomBusinessValidationException   => "ERR_BUSINESS_VALIDATION",
 
         _                                   => "ERR_INTERNO"
@@ -126,7 +129,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         OperationCanceledException          => "Operación cancelada",
 
         UnauthorizedAccessException         => "No autorizado",
-        
+        Npgsql.PostgresException pgEx when pgEx.SqlState == "P0001" => "Solicitud inválida (error de base de datos)",
         CustomBusinessValidationException   => "Reglas de negocio insatisfechas",
 
         _                                   => "Error interno del servidor"

@@ -1,11 +1,10 @@
 namespace MenuSoda.Application.Dto;
 
-public class EntradaResponse
+public class TipoPlatoResponse
 {
     public int Id { get; set; }
-    public string Entdes { get; set; } = "";
+    public string Tipplades { get; set; } = "";
     public int Codest { get; set; }
-    public int Codtipent { get; set; }
     public string Fecreg { get; set; } = "";
     public string Usureg { get; set; } = "";
     public string? Fecmod { get; set; }
