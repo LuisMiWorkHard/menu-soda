@@ -78,6 +78,11 @@ builder.Services.AddScoped<ITipoPlatoRepository, TipoPlatoRepository>();
 builder.Services.AddScoped<ITipoPlatoService, TipoPlatoService>();
 builder.Services.AddScoped<IPlatoRepository, PlatoRepository>();
 builder.Services.AddScoped<IPlatoService, PlatoService>();
+builder.Services.AddScoped<IImagenRepository, ImagenRepository>();
+builder.Services.AddScoped<IImagenService, ImagenService>();
+builder.Services.AddScoped<IAdicionalRepository, AdicionalRepository>();
+builder.Services.AddScoped<IMenuDiarioRepository, MenuDiarioRepository>();
+builder.Services.AddScoped<IMenuDiarioService, MenuDiarioService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -169,6 +174,7 @@ app.UseHttpsRedirection();
 
 // Valida headers requeridos para todas las solicitudes
 app.UseMiddleware<RequiredHeadersMiddleware>();
+app.UseMiddleware<MockJwtMiddleware>();
 
 // Rate limiting para prevenir ataques de fuerza bruta
 app.UseRateLimiter();

@@ -31,25 +31,25 @@ public class TipoPlatoService : ITipoPlatoService
         return entities.Select(MapToResponse);
     }
 
-    public async Task<int> CreateAsync(TipoPlatoCreateRequest request, string currentUser, CancellationToken ct)
+    public async Task<int> CreateAsync(TipoPlatoCreateServiceRequest request, CancellationToken ct)
     {
         var entity = new DomainRepo.TipoPlatoInsertRequest
         {
             Tipplades = request.Tipplades,
-            Usureg = currentUser
+            Usureg = request.Usureg
         };
 
         return await _tipoPlatoRepository.CreateAsync(entity, ct);
     }
 
-    public async Task<bool> UpdateAsync(TipoPlatoUpdateRequest request, string currentUser, CancellationToken ct)
+    public async Task<bool> UpdateAsync(TipoPlatoUpdateServiceRequest request, CancellationToken ct)
     {
         var entity = new DomainRepo.TipoPlatoUpdateRequest
         {
             Id = request.Id,
             Tipplades = request.Tipplades,
             Codest = request.Codest,
-            Usumod = currentUser
+            Usumod = request.Usumod
         };
 
         var rowsAffected = await _tipoPlatoRepository.UpdateAsync(entity, ct);

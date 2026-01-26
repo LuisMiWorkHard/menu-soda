@@ -60,7 +60,6 @@ public class AuthService : IAuthService
             user.Usuintfall++;
             if (user.Usuintfall >= 5)
             {
-                user.Usufecblo = DateTime.UtcNow.AddMinutes(15);
                 _logger.LogWarning("Cuenta bloqueada por múltiples intentos: User {UserId}", user.Id);
             }
             

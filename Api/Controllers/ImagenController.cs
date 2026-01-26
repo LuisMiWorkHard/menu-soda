@@ -9,42 +9,44 @@ namespace MenuSoda.Api.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class TipoPlatoController : ControllerBase
+public class ImagenController : ControllerBase
 {
-    private readonly ITipoPlatoService _tipoPlatoService;
+    private readonly IImagenService _imagenService;
 
-    public TipoPlatoController(ITipoPlatoService tipoPlatoService)
+    public ImagenController(IImagenService imagenService)
     {
-        _tipoPlatoService = tipoPlatoService;
+        _imagenService = imagenService;
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id, CancellationToken ct)
     {
-        var result = await _tipoPlatoService.GetByIdAsync(id, ct);
+        var result = await _imagenService.GetByIdAsync(id, ct);
         if (result == null) return NotFound();
         return Ok(result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetList([FromQuery] string? descripcion, CancellationToken ct)
+    public async Task<IActionResult> GetList([FromQuery] string? nombre, CancellationToken ct)
     {
-        var result = await _tipoPlatoService.GetListAsync(descripcion, ct);
+        var result = await _imagenService.GetListAsync(nombre, ct);
         return Ok(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] TipoPlatoCreateRequest request, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] ImagenCreateRequest request, CancellationToken ct)
     {
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
         
-        var serviceRequest = new TipoPlatoCreateServiceRequest
+        var serviceRequest = new ImagenCreateServiceRequest
         {
-            Tipplades = request.Tipplades,
+            Imarut = request.Imarut,
+            Imanom = request.Imanom,
+            Imaext = request.Imaext,
             Usureg = currentUser
         };
 
-        var id = await _tipoPlatoService.CreateAsync(serviceRequest, ct);
+        var id = await _imagenService.CreateAsync(serviceRequest, ct);
         
         if (id > 0)
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
@@ -53,21 +55,23 @@ public class TipoPlatoController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] TipoPlatoUpdateRequest request, CancellationToken ct)
+    public async Task<IActionResult> Update(int id, [FromBody] ImagenUpdateRequest request, CancellationToken ct)
     {
         if (id != request.Id) return BadRequest("El ID de la URL no coincide con el cuerpo de la solicitud.");
 
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
 
-        var serviceRequest = new TipoPlatoUpdateServiceRequest
+        var serviceRequest = new ImagenUpdateServiceRequest
         {
             Id = request.Id,
-            Tipplades = request.Tipplades,
+            Imarut = request.Imarut,
+            Imanom = request.Imanom,
+            Imaext = request.Imaext,
             Codest = request.Codest,
             Usumod = currentUser
         };
 
-        var success = await _tipoPlatoService.UpdateAsync(serviceRequest, ct);
+        var success = await _imagenService.UpdateAsync(serviceRequest, ct);
 
         if (!success) return NotFound();
 
@@ -77,7 +81,7 @@ public class TipoPlatoController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var success = await _tipoPlatoService.DeleteAsync(id, ct);
+        var success = await _imagenService.DeleteAsync(id, ct);
         if (!success) return NotFound();
 
         return NoContent();

@@ -31,25 +31,25 @@ public class TipoEntradaService : ITipoEntradaService
         return entities.Select(MapToResponse);
     }
 
-    public async Task<int> CreateAsync(TipoEntradaCreateRequest request, string currentUser, CancellationToken ct)
+    public async Task<int> CreateAsync(TipoEntradaCreateServiceRequest request, CancellationToken ct)
     {
         var entity = new DomainRepo.TipoEntradaInsertRequest
         {
             Tipentdes = request.Tipentdes,
-            Usureg = currentUser
+            Usureg = request.Usureg
         };
 
         return await _tipoEntradaRepository.CreateAsync(entity, ct);
     }
 
-    public async Task<bool> UpdateAsync(TipoEntradaUpdateRequest request, string currentUser, CancellationToken ct)
+    public async Task<bool> UpdateAsync(TipoEntradaUpdateServiceRequest request, CancellationToken ct)
     {
         var entity = new DomainRepo.TipoEntradaUpdateRequest
         {
             Id = request.Id,
             Tipentdes = request.Tipentdes,
             Codest = request.Codest,
-            Usumod = currentUser
+            Usumod = request.Usumod
         };
 
         var rowsAffected = await _tipoEntradaRepository.UpdateAsync(entity, ct);

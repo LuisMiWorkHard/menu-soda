@@ -135,7 +135,11 @@ public class GenericRepository
         NpgsqlTransaction? transaction = null)
     {
         var ownConnection = transaction == null;
-        await using var conn = ownConnection ? (NpgsqlConnection)_context.CreateConnection() : transaction!.Connection!;
+        var conn = ownConnection ? (NpgsqlConnection)_context.CreateConnection() : transaction!.Connection!;
+        
+        // Si la conexión es propia, debemos asegurarnos de liberarla. Si es externa, NO debemos liberarla aquí.
+        // Usaremos un bloque try/finally manual para controlar esto o un using condicional (difícil en C# 8).
+        // Mejor enfoque: Asignar conn fuera y liberar solo si ownConnection.
         var tx = transaction;
 
         if (ownConnection)
@@ -160,6 +164,14 @@ public class GenericRepository
             if (ownConnection)
                 await tx!.RollbackAsync(ct);
             throw;
+        }
+        finally
+        {
+            if (ownConnection && conn != null)
+            {
+                await conn.CloseAsync();
+                await conn.DisposeAsync();
+            }
         }
     }
 

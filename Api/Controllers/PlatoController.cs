@@ -36,24 +36,22 @@ public class PlatoController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] PlatoCreateRequest request, CancellationToken ct)
     {
-        try 
+        var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
+        
+        var serviceRequest = new PlatoCreateServiceRequest
         {
-            var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-            var id = await _platoService.CreateAsync(request, currentUser, ct);
+            Planom = request.Planom,
+            Plades = request.Plades,
+            Codtippla = request.Codtippla,
+            Usureg = currentUser
+        };
+
+        var id = await _platoService.CreateAsync(serviceRequest, ct);
+        
+        if (id > 0)
+            return CreatedAtAction(nameof(GetById), new { id }, new { id });
             
-            if (id > 0)
-                return CreatedAtAction(nameof(GetById), new { id }, new { id });
-                
-            return BadRequest(); 
-        }
-        catch (Exception ex)
-        {
-            // Capturar excepción de DB (integridad referencial que añadimos al SP)
-            if (ex.Message.Contains("no existe o no está activo"))
-                return UnprocessableEntity(new { message = ex.Message });
-                
-            throw;
-        }
+        return BadRequest(); 
     }
 
     [HttpPut("{id}")]
@@ -61,23 +59,23 @@ public class PlatoController : ControllerBase
     {
         if (id != request.Id) return BadRequest("El ID de la URL no coincide con el cuerpo de la solicitud.");
 
-        try
+        var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
+        
+        var serviceRequest = new PlatoUpdateServiceRequest
         {
-            var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-            var success = await _platoService.UpdateAsync(request, currentUser, ct);
+            Id = request.Id,
+            Planom = request.Planom,
+            Plades = request.Plades,
+            Codtippla = request.Codtippla,
+            Codest = request.Codest,
+            Usumod = currentUser
+        };
 
-            if (!success) return NotFound();
+        var success = await _platoService.UpdateAsync(serviceRequest, ct);
 
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-             // Capturar excepción de DB (integridad referencial que añadimos al SP)
-            if (ex.Message.Contains("no existe o no está activo"))
-                 return UnprocessableEntity(new { message = ex.Message });
-                 
-            throw;
-        }
+        if (!success) return NotFound();
+
+        return NoContent();
     }
 
     [HttpDelete("{id}")]

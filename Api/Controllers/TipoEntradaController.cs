@@ -37,7 +37,14 @@ public class TipoEntradaController : ControllerBase
     public async Task<IActionResult> Create([FromBody] TipoEntradaCreateRequest request, CancellationToken ct)
     {
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-        var id = await _tipoEntradaService.CreateAsync(request, currentUser, ct);
+        
+        var serviceRequest = new TipoEntradaCreateServiceRequest
+        {
+            Tipentdes = request.Tipentdes,
+            Usureg = currentUser
+        };
+
+        var id = await _tipoEntradaService.CreateAsync(serviceRequest, ct);
         
         if (id > 0)
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
@@ -51,7 +58,16 @@ public class TipoEntradaController : ControllerBase
         if (id != request.Id) return BadRequest("El ID de la URL no coincide con el cuerpo de la solicitud.");
 
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-        var success = await _tipoEntradaService.UpdateAsync(request, currentUser, ct);
+
+        var serviceRequest = new TipoEntradaUpdateServiceRequest
+        {
+            Id = request.Id,
+            Tipentdes = request.Tipentdes,
+            Codest = request.Codest,
+            Usumod = currentUser
+        };
+
+        var success = await _tipoEntradaService.UpdateAsync(serviceRequest, ct);
 
         if (!success) return NotFound();
 
