@@ -33,7 +33,6 @@ public class MenuDiarioController : ControllerBase
         return Ok(result);
     }
 
-    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] MenuDiarioCreateRequest request, CancellationToken ct)
     {

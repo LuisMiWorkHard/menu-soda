@@ -174,7 +174,6 @@ app.UseHttpsRedirection();
 
 // Valida headers requeridos para todas las solicitudes
 app.UseMiddleware<RequiredHeadersMiddleware>();
-app.UseMiddleware<MockJwtMiddleware>();
 
 // Rate limiting para prevenir ataques de fuerza bruta
 app.UseRateLimiter();
