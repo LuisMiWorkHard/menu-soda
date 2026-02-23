@@ -59,3 +59,7 @@ appsettings.*.json
 
 #agent
 .agent
+.claude
+
+# MCP config (contiene credenciales)
+.mcp.json
