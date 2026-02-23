@@ -54,8 +54,8 @@ TestResult.xml
 nunit-*.xml
 
 # User Secrets / Configuration
-appsettings.json
-appsettings.*.json
+#appsettings.json
+#appsettings.*.json
 
 #agent
 .agent
