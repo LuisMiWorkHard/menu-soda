@@ -37,12 +37,12 @@ public class RequiredHeadersMiddleware
                     context,
                     statusCode: StatusCodes.Status400BadRequest,
                     title: "Encabezado requerido faltante",
-                    detail: $"Falta el header '{h}'."
+                    detail: $"Petición invalida. No se encontro el encabezado '{h}'."
                 ) ?? new ProblemDetails
                 {
                     Status = StatusCodes.Status400BadRequest,
                     Title = "Encabezado requerido faltante",
-                    Detail = $"Falta el header '{h}'."
+                    Detail = $"Petición invalida. No se encontro el encabezado '{h}'."
                 };
 
                 problem.Extensions["code"] = "ERR_HEADER_REQUERIDO";
