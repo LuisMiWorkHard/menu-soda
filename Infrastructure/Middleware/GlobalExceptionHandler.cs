@@ -101,11 +101,11 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         TaskCanceledException               => "ERR_TIMEOUT",
         OperationCanceledException          => "ERR_TIMEOUT",
 
-        UnauthorizedAccessException         => "ERR_NO_AUTORIZADO",
+        UnauthorizedAccessException         => "ERR_UNAUTHORIZED",
         Npgsql.PostgresException pgEx when pgEx.SqlState == "P0001" => "ERR_BAD_REQUEST",
-        CustomBusinessValidationException   => "ERR_NEGOCIO",
+        CustomBusinessValidationException   => "ERR_BUSINESS",
 
-        _                                   => "ERR_INTERNO"
+        _                                   => "ERR_INTERNAL"
     };
 
     private static string MapTitle(Exception ex) => ex switch
