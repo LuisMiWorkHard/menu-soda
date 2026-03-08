@@ -25,7 +25,7 @@ namespace MenuSoda.Application.Validators
 
             RuleFor(x => x.Contrasena)
                 .NotEmpty().WithMessage("La contraseña es requerida.")
-                .MinimumLength(8).WithMessage("Usuario ó contraseña incorrecta.")
+                .MinimumLength(6).WithMessage("Usuario ó contraseña incorrecta.")
                 .MaximumLength(255).WithMessage("Usuario ó contraseña incorrecta.");
         }
     }
