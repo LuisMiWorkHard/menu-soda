@@ -44,7 +44,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
             UnauthorizedAccessException        => StatusCodes.Status401Unauthorized,
             Npgsql.PostgresException pgEx when pgEx.SqlState == "P0001" => StatusCodes.Status400BadRequest,
-            CustomBusinessValidationException  => StatusCodes.Status422UnprocessableEntity,
+            CustomBusinessValidationException  => StatusCodes.Status409Conflict,
 
             _                                  => StatusCodes.Status500InternalServerError
         };
@@ -103,7 +103,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
         UnauthorizedAccessException         => "ERR_NO_AUTORIZADO",
         Npgsql.PostgresException pgEx when pgEx.SqlState == "P0001" => "ERR_BAD_REQUEST",
-        CustomBusinessValidationException   => "ERR_BUSINESS_VALIDATION",
+        CustomBusinessValidationException   => "ERR_NEGOCIO",
 
         _                                   => "ERR_INTERNO"
     };
@@ -142,9 +142,9 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         StatusCodes.Status403Forbidden             => "No tiene permisos para esta operación.",
         StatusCodes.Status404NotFound              => "El recurso solicitado no existe.",
         StatusCodes.Status408RequestTimeout        => "La solicitud excedió el tiempo de espera.",
-        StatusCodes.Status422UnprocessableEntity   => ex is CustomBusinessValidationException
+        StatusCodes.Status409Conflict              => ex is CustomBusinessValidationException
                                                         ? ex.Message // mensaje de negocio (si es seguro)
-                                                        : "Reglas de negocio no satisfechas.",
+                                                        : "La solicitud conflicta con el estado actual del recurso.",
         _                                          => "Se produjo un error inesperado en el servidor."
     };
 
