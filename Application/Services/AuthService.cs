@@ -51,19 +51,19 @@ public class AuthService : IAuthService
         if (user.Usufecblo.HasValue && user.Usufecblo > DateTime.UtcNow)
         {
             var remaining = user.Usufecblo.Value - DateTime.UtcNow;
-            throw new UnauthorizedAccessException($"Cuenta bloqueada. Intente de nuevo en {Math.Ceiling(remaining.TotalMinutes)} minutos.");
+            throw new UnauthorizedAccessException($"La cuenta esta bloqueada por exceder los {_authOptions.MaxFailedAttempts} intentos permitidos. Intente de nuevo en {Math.Ceiling(remaining.TotalMinutes)} minutos.");
         }
 
         // 3. Verificar contraseña
         if (!_passwordHasher.Verify(request.Contrasena, user.Usuhash))
         {
             user.Usuintfall++;
-            if (user.Usuintfall >= 5)
+            if (user.Usuintfall >= _authOptions.MaxFailedAttempts)
             {
                 _logger.LogWarning("Cuenta bloqueada por múltiples intentos: User {UserId}", user.Id);
             }
             
-            await _userRepository.ActualizarBloqueoAsync(user, ct);
+            await _userRepository.ActualizarBloqueoAsync(user, _authOptions.MaxFailedAttempts, _authOptions.LockoutMinutes, ct);
             
             throw new UnauthorizedAccessException("Usuario ó contraseña inválidos.");
         }
@@ -73,7 +73,7 @@ public class AuthService : IAuthService
         {
             user.Usuintfall = 0;
             user.Usufecblo = null;
-            await _userRepository.ActualizarBloqueoAsync(user, ct);
+            await _userRepository.ActualizarBloqueoAsync(user, _authOptions.MaxFailedAttempts, _authOptions.LockoutMinutes, ct);
         }
 
         var accessToken = _tokenGenerator.GenerateToken(user);

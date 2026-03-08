@@ -43,11 +43,13 @@ public class UserRepository : IUserRepository
         );
     }
 
-    public async Task ActualizarBloqueoAsync(User usuario, CancellationToken ct)
+    public async Task ActualizarBloqueoAsync(User usuario, int maxAttempts, int lockoutMinutes, CancellationToken ct)
     {
         var parameters = new DynamicParameters();
         parameters.Add("p_id", usuario.Id, DbType.Int32);
         parameters.Add("p_usuintfall", usuario.Usuintfall, DbType.Int32);
+        parameters.Add("p_max_attempts", maxAttempts, DbType.Int32);
+        parameters.Add("p_lockout_minutes", lockoutMinutes, DbType.Int32);
         
         await _genericRepository.CallProcedureAsync(
             "seguridad.sp_update_usu_bloqueo",

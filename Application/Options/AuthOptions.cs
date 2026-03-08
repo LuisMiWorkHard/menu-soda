@@ -7,5 +7,7 @@ namespace MenuSoda.Application.Options
         public string DeviceIdHeaderName { get; set; } = "DeviceId";
         public string GeoLatHeaderName { get; set; } = "GeoLat";
         public string GeoLonHeaderName { get; set; } = "GeoLon";
+        public int MaxFailedAttempts { get; set; }
+        public int LockoutMinutes { get; set; }
     }
 }
