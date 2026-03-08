@@ -44,7 +44,7 @@ public class AuthService : IAuthService
         // 1. Verificar si el usuario existe
         if (user == null)
         {
-            throw new UnauthorizedAccessException("Credenciales inválidas.");
+            throw new UnauthorizedAccessException("Usuario ó contraseña inválidos.");
         }
 
         // 2. Verificar bloqueo de cuenta
@@ -65,7 +65,7 @@ public class AuthService : IAuthService
             
             await _userRepository.ActualizarBloqueoAsync(user, ct);
             
-            throw new UnauthorizedAccessException("Credenciales inválidas.");
+            throw new UnauthorizedAccessException("Usuario ó contraseña inválidos.");
         }
 
         // 4. Login exitoso: Resetear contadores

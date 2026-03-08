@@ -25,8 +25,8 @@ namespace MenuSoda.Application.Validators
 
             RuleFor(x => x.Contrasena)
                 .NotEmpty().WithMessage("La contraseña es requerida.")
-                .MinimumLength(8).WithMessage("La contraseña debe tener al menos 8 caracteres.")
-                .MaximumLength(255).WithMessage("La contraseña no puede exceder los 255 caracteres.");
+                .MinimumLength(8).WithMessage("Usuario ó contraseña incorrecta.")
+                .MaximumLength(255).WithMessage("Usuario ó contraseña incorrecta.");
         }
     }
 }
