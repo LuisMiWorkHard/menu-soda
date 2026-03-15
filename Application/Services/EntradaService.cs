@@ -34,7 +34,9 @@ public class EntradaService : IEntradaService
         return await _entradaRepository.CreateAsync(new EntradaInsertRequest
         {
             Entdes = request.Entdes,
+            Entdeslar = request.Entdeslar,
             Codtipent = request.Codtipent,
+            Codima = request.Codima,
             Usureg = currentUser
         }, ct);
     }
@@ -64,8 +66,10 @@ public class EntradaService : IEntradaService
         {
             Id = entrada.Id,
             Entdes = entrada.Entdes,
+            Entdeslar = entrada.Entdeslar,
             Codest = entrada.Codest,
             Codtipent = entrada.Codtipent,
+            Codima = entrada.Codima,
             Fecreg = entrada.Fecreg,
             Usureg = entrada.Usureg,
             Fecmod = entrada.Fecmod,

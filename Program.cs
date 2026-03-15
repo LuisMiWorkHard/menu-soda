@@ -6,6 +6,7 @@ using MenuSoda.Infrastructure.Middleware;
 using MenuSoda.Infrastructure.Persistence;
 using MenuSoda.Infrastructure.Security;
 using MenuSoda.Infrastructure.Repositories;
+using MenuSoda.Infrastructure.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,6 +22,12 @@ using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Límite de tamaño de request body desde config (para uploads de imágenes)
+var maxImageSizeMb = builder.Configuration.GetValue("Gcs:MaxImageSizeMb", 5);
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = maxImageSizeMb * 1024 * 1024;
+});
 
 builder.Services.AddSingleton<DapperContext>();
 // Add services to the container.
@@ -117,6 +124,10 @@ builder.Services.AddProblemDetails(options =>
 
 // Configura opciones fuertemente tipadas desde appsettings.json
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
+builder.Services.Configure<GcsOptions>(builder.Configuration.GetSection("Gcs"));
+
+// Google Cloud Storage
+builder.Services.AddSingleton<IStorageService, GcsStorageService>();
 
 // Configura respuesta personalizada para validación de modelos
 builder.Services.Configure<ApiBehaviorOptions>(o =>

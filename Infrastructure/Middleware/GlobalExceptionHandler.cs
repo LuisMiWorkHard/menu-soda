@@ -9,15 +9,18 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
     private readonly ProblemDetailsFactory _problemDetailsFactory;
     private readonly ILogger<GlobalExceptionHandler> _logger;
     private readonly IHostEnvironment _env;
+    private readonly int _maxImageSizeMb;
 
     public GlobalExceptionHandler(
         ProblemDetailsFactory problemDetailsFactory,
         ILogger<GlobalExceptionHandler> logger,
-        IHostEnvironment env)
+        IHostEnvironment env,
+        IConfiguration configuration)
     {
         _problemDetailsFactory = problemDetailsFactory;
         _logger = logger;
         _env = env;
+        _maxImageSizeMb = configuration.GetValue("Gcs:MaxImageSizeMb", 5);
     }
 
     public async ValueTask<bool> TryHandleAsync(
@@ -27,6 +30,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
     {
         var status = exception switch
         {
+            BadHttpRequestException badReq     => badReq.StatusCode,
             ArgumentException                  => StatusCodes.Status400BadRequest,
             FormatException                    => StatusCodes.Status400BadRequest,
             ValidationException                => StatusCodes.Status400BadRequest,
@@ -86,6 +90,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
     private static string MapCode(Exception ex) => ex switch
     {
+        InvalidDataException                => "ERR_PAYLOAD_TOO_LARGE",
         ArgumentException                   => "ERR_BAD_REQUEST",
         FormatException                     => "ERR_BAD_REQUEST",
         ValidationException                 => "ERR_BAD_REQUEST",
@@ -110,6 +115,8 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
     private static string MapTitle(Exception ex) => ex switch
     {
+        /*el cuerpo de la solicitud excede el límite permitido*/
+        InvalidDataException                => "Archivo demasiado grande",
         /*argumento inválido para un método. Se usa al validar parámetros de entrada (valor fuera de rango, nulo cuando no toca, combinación inválida). Ej.: comprobar x > 0*/
         ArgumentException                   => "Solicitud inválida (argumento incorrecto)",
         /*formato inválido para un dato. Ej.: fecha mal formada, número con letras, cadena no convertible a enum*/
@@ -135,8 +142,9 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         _                                   => "Error interno del servidor"
     };
 
-    private static string MapProductionDetail(Exception ex, int status) => status switch
+    private string MapProductionDetail(Exception ex, int status) => status switch
     {
+        StatusCodes.Status413PayloadTooLarge       => $"El archivo excede el tamaño máximo permitido ({_maxImageSizeMb} MB).",
         StatusCodes.Status400BadRequest            => "La solicitud contiene datos inválidos.",
         StatusCodes.Status401Unauthorized          => "Debe autenticarse para continuar.",
         StatusCodes.Status403Forbidden             => "No tiene permisos para esta operación.",

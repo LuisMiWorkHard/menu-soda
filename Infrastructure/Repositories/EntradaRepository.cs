@@ -36,11 +36,13 @@ public class EntradaRepository : IEntradaRepository
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
             "menusoda.sp_ins_entrada",
-            new 
-            { 
-                p_entdes = request.Entdes, 
+            new
+            {
+                p_entdes = request.Entdes,
+                p_entdeslar = request.Entdeslar,
                 p_codtipent = request.Codtipent,
-                p_usureg = request.Usureg 
+                p_codima = request.Codima,
+                p_usureg = request.Usureg
             },
             ct
         );

@@ -9,10 +9,12 @@ namespace MenuSoda.Application.Services;
 public class ImagenService : IImagenService
 {
     private readonly IImagenRepository _imagenRepository;
+    private readonly IStorageService _storageService;
 
-    public ImagenService(IImagenRepository imagenRepository)
+    public ImagenService(IImagenRepository imagenRepository, IStorageService storageService)
     {
         _imagenRepository = imagenRepository;
+        _storageService = storageService;
     }
 
     public async Task<ImagenResponse?> GetByIdAsync(int id, CancellationToken ct)
@@ -66,12 +68,12 @@ public class ImagenService : IImagenService
         return rowsAffected > 0;
     }
 
-    private static ImagenResponse MapToResponse(Imagen entity)
+    private ImagenResponse MapToResponse(Imagen entity)
     {
         return new ImagenResponse
         {
             Id = entity.Id,
-            Imarut = entity.Imarut,
+            Imarut = _storageService.GetSignedUrl(entity.Imarut),
             Imanom = entity.Imanom,
             Imaext = entity.Imaext,
             Codest = entity.Codest,
