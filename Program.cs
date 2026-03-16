@@ -180,8 +180,8 @@ app.UseForwardedHeaders();
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
-app.UseHttpsRedirection();
 
 // Valida headers requeridos para todas las solicitudes
 app.UseMiddleware<RequiredHeadersMiddleware>();
