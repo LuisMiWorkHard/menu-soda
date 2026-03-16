@@ -1,5 +1,9 @@
-namespace MenuSoda.Application.Dto;
+namespace MenuSoda.Domain.Models.Repositories;
 
+/// <summary>
+/// Respuesta del menú diario desde stored procedures
+/// Todas las fechas vienen en formato DD/MM/YYYY o DD/MM/YYYY HH:MM desde la BD
+/// </summary>
 public class MenuDiarioResponse
 {
     public int Id { get; set; }
@@ -9,8 +13,4 @@ public class MenuDiarioResponse
     public string Usureg { get; set; } = string.Empty;
     public string? Fecmod { get; set; }
     public string? Usumod { get; set; }
-
-    public List<dynamic> Entradas { get; set; } = new();
-    public List<dynamic> Platos { get; set; } = new();
-    public dynamic? Imagen { get; set; }
 }

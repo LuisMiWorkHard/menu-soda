@@ -34,7 +34,7 @@ public class EntradaRepository : IEntradaRepository
 
     public async Task<int> CreateAsync(EntradaInsertRequest request, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_ins_entrada",
             new
             {
@@ -46,33 +46,33 @@ public class EntradaRepository : IEntradaRepository
             },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 
     public async Task<int> UpdateAsync(EntradaUpdateRequest request, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_upd_entrada",
-            new 
-            { 
+            new
+            {
                 p_id = request.Id,
-                p_entdes = request.Entdes, 
+                p_entdes = request.Entdes,
                 p_codtipent = request.Codtipent,
                 p_codest = request.Codest,
                 p_usumod = request.Usumod
             },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 
     public async Task<int> DeleteAsync(int id, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_del_entrada",
             new { p_id = id },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 }

@@ -13,6 +13,10 @@ namespace MenuSoda.Application.Services;
 public class MenuDiarioService : IMenuDiarioService
 {
     private readonly IMenuDiarioRepository _menuDiarioRepository;
+    private readonly IMenuDiarioEntradaRepository _menuDiarioEntradaRepository;
+    private readonly IMenuDiarioPlatoRepository _menuDiarioPlatoRepository;
+    private readonly IMenuDiarioPlatoAdicionalRepository _menuDiarioPlatoAdicionalRepository;
+    private readonly IMenuDiarioImagenRepository _menuDiarioImagenRepository;
     private readonly IEntradaRepository _entradaRepository;
     private readonly IPlatoRepository _platoRepository;
     private readonly IImagenRepository _imagenRepository;
@@ -21,6 +25,10 @@ public class MenuDiarioService : IMenuDiarioService
 
     public MenuDiarioService(
         IMenuDiarioRepository menuDiarioRepository,
+        IMenuDiarioEntradaRepository menuDiarioEntradaRepository,
+        IMenuDiarioPlatoRepository menuDiarioPlatoRepository,
+        IMenuDiarioPlatoAdicionalRepository menuDiarioPlatoAdicionalRepository,
+        IMenuDiarioImagenRepository menuDiarioImagenRepository,
         IEntradaRepository entradaRepository,
         IPlatoRepository platoRepository,
         IImagenRepository imagenRepository,
@@ -28,6 +36,10 @@ public class MenuDiarioService : IMenuDiarioService
         DapperContext dapperContext)
     {
         _menuDiarioRepository = menuDiarioRepository;
+        _menuDiarioEntradaRepository = menuDiarioEntradaRepository;
+        _menuDiarioPlatoRepository = menuDiarioPlatoRepository;
+        _menuDiarioPlatoAdicionalRepository = menuDiarioPlatoAdicionalRepository;
+        _menuDiarioImagenRepository = menuDiarioImagenRepository;
         _entradaRepository = entradaRepository;
         _platoRepository = platoRepository;
         _imagenRepository = imagenRepository;
@@ -76,10 +88,10 @@ public class MenuDiarioService : IMenuDiarioService
                 Mendiafec = request.Mendiafec,
                 Usureg = request.Usureg
             };
-            var menuId = await _menuDiarioRepository.CreateHeaderAsync(headerRequest, ct, transaction);
+            var menuId = await _menuDiarioRepository.CreateAsync(headerRequest, ct, transaction);
 
             // B. Insertar Detalles
-            await _menuDiarioRepository.AddImagenAsync(new DomainRepo.MenuDiarioImagenInsertRequest 
+            await _menuDiarioImagenRepository.AddAsync(new DomainRepo.MenuDiarioImagenInsertRequest 
             { 
                 Codmendia = menuId, 
                 Codima = request.ImagenId, 
@@ -88,7 +100,7 @@ public class MenuDiarioService : IMenuDiarioService
 
             foreach (var entId in request.EntradasIds)
             {
-                await _menuDiarioRepository.AddEntradaAsync(new DomainRepo.MenuDiarioEntradaInsertRequest
+                await _menuDiarioEntradaRepository.AddAsync(new DomainRepo.MenuDiarioEntradaInsertRequest
                 {
                     Codmendia = menuId,
                     Codent = entId,
@@ -98,7 +110,7 @@ public class MenuDiarioService : IMenuDiarioService
 
             foreach (var platoItem in request.Platos)
             {
-                var idPlatoGenerado = await _menuDiarioRepository.AddPlatoAsync(new DomainRepo.MenuDiarioPlatoInsertRequest
+                var idPlatoGenerado = await _menuDiarioPlatoRepository.AddAsync(new DomainRepo.MenuDiarioPlatoInsertRequest
                 {
                     Codmendia = menuId,
                     Codpla = platoItem.PlatoId,
@@ -107,7 +119,7 @@ public class MenuDiarioService : IMenuDiarioService
 
                 if (platoItem.AdicionalId.HasValue && platoItem.AdicionalId.Value > 0)
                 {
-                    await _menuDiarioRepository.AddPlatoAdicionalAsync(new DomainRepo.MenuDiarioPlatoAdicionalInsertRequest
+                    await _menuDiarioPlatoAdicionalRepository.AddAsync(new DomainRepo.MenuDiarioPlatoAdicionalInsertRequest
                     {
                         Codmendiapla = idPlatoGenerado,
                         Codadi = platoItem.AdicionalId.Value,
@@ -130,8 +142,8 @@ public class MenuDiarioService : IMenuDiarioService
     public async Task<bool> UpdateAsync(MenuDiarioUpdateServiceRequest request, CancellationToken ct)
     {
          // 1. Validar existencia Header
-         var currentMenu = await _menuDiarioRepository.GetHeaderByIdAsync(request.Id, ct);
-         if (currentMenu == null || currentMenu.codest == 0)
+         var currentMenu = await _menuDiarioRepository.GetByIdAsync(request.Id, ct);
+         if (currentMenu == null || currentMenu.Codest == 0)
              throw new GlobalExceptionHandler.CustomBusinessValidationException($"El menú no existe.");
 
         // 2. Validaciones Hijos (Igual que create)
@@ -175,17 +187,17 @@ public class MenuDiarioService : IMenuDiarioService
                 Codest = request.Codest,
                 Usumod = request.Usumod
             };
-            await _menuDiarioRepository.UpdateHeaderAsync(headerUpdate, ct, transaction);
+            await _menuDiarioRepository.UpdateAsync(headerUpdate, ct, transaction);
 
             // B. Gestión Hijos: Estrategia simple -> Borrado Lógico + Re-inserción
             
             // Imagen
-            await _menuDiarioRepository.DeleteImagenByMenuLogicalAsync(new DomainRepo.MenuDiarioImagenDeleteRequest 
+            await _menuDiarioImagenRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioImagenDeleteRequest 
             { 
                 Codmendia = request.Id, 
                 Usumod = request.Usumod 
             }, ct, transaction);
-            await _menuDiarioRepository.AddImagenAsync(new DomainRepo.MenuDiarioImagenInsertRequest
+            await _menuDiarioImagenRepository.AddAsync(new DomainRepo.MenuDiarioImagenInsertRequest
             {
                 Codmendia = request.Id,
                 Codima = request.ImagenId,
@@ -193,14 +205,14 @@ public class MenuDiarioService : IMenuDiarioService
             }, ct, transaction);
 
             // Entradas
-            await _menuDiarioRepository.DeleteEntradasByMenuLogicalAsync(new DomainRepo.MenuDiarioEntradaDeleteRequest
+            await _menuDiarioEntradaRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioEntradaDeleteRequest
             {
                 Codmendia = request.Id,
                 Usumod = request.Usumod
             }, ct, transaction);
             foreach (var entId in request.EntradasIds)
             {
-                await _menuDiarioRepository.AddEntradaAsync(new DomainRepo.MenuDiarioEntradaInsertRequest
+                await _menuDiarioEntradaRepository.AddAsync(new DomainRepo.MenuDiarioEntradaInsertRequest
                 {
                     Codmendia = request.Id,
                     Codent = entId,
@@ -209,13 +221,13 @@ public class MenuDiarioService : IMenuDiarioService
             }
             
             // Platos - Cascade Delete: Primero Adicionales, luego Platos
-            await _menuDiarioRepository.DeletePlatoAdicionalesByMenuLogicalAsync(new DomainRepo.MenuDiarioPlatoAdicionalDeleteRequest
+            await _menuDiarioPlatoAdicionalRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioPlatoAdicionalDeleteRequest
             {
                 Codmendia = request.Id,
                 Usumod = request.Usumod
             }, ct, transaction);
 
-            await _menuDiarioRepository.DeletePlatosByMenuLogicalAsync(new DomainRepo.MenuDiarioPlatoDeleteRequest
+            await _menuDiarioPlatoRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioPlatoDeleteRequest
             {
                 Codmendia = request.Id,
                 Usumod = request.Usumod
@@ -224,7 +236,7 @@ public class MenuDiarioService : IMenuDiarioService
             // Re-insertar Platos + Adicionales
             foreach (var platoItem in request.Platos)
             {
-                var idPlatoGenerado = await _menuDiarioRepository.AddPlatoAsync(new DomainRepo.MenuDiarioPlatoInsertRequest
+                var idPlatoGenerado = await _menuDiarioPlatoRepository.AddAsync(new DomainRepo.MenuDiarioPlatoInsertRequest
                 {
                     Codmendia = request.Id,
                     Codpla = platoItem.PlatoId,
@@ -233,7 +245,7 @@ public class MenuDiarioService : IMenuDiarioService
 
                 if (platoItem.AdicionalId.HasValue && platoItem.AdicionalId.Value > 0)
                 {
-                    await _menuDiarioRepository.AddPlatoAdicionalAsync(new DomainRepo.MenuDiarioPlatoAdicionalInsertRequest
+                    await _menuDiarioPlatoAdicionalRepository.AddAsync(new DomainRepo.MenuDiarioPlatoAdicionalInsertRequest
                     {
                         Codmendiapla = idPlatoGenerado,
                         Codadi = platoItem.AdicionalId.Value,
@@ -260,22 +272,22 @@ public class MenuDiarioService : IMenuDiarioService
 
         try
         {
-            await _menuDiarioRepository.DeleteHeaderAsync(id, ct, transaction);
+            await _menuDiarioRepository.DeleteAsync(id, ct, transaction);
             
             // Borrado lógico en cascada con Auditoría
-            await _menuDiarioRepository.DeleteEntradasByMenuLogicalAsync(new DomainRepo.MenuDiarioEntradaDeleteRequest 
+            await _menuDiarioEntradaRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioEntradaDeleteRequest 
             {
                 Codmendia = id,
                 Usumod = user
             }, ct, transaction);
 
-            await _menuDiarioRepository.DeletePlatosByMenuLogicalAsync(new DomainRepo.MenuDiarioPlatoDeleteRequest
+            await _menuDiarioPlatoRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioPlatoDeleteRequest
             {
                 Codmendia = id,
                 Usumod = user
             }, ct, transaction);
 
-            await _menuDiarioRepository.DeleteImagenByMenuLogicalAsync(new DomainRepo.MenuDiarioImagenDeleteRequest
+            await _menuDiarioImagenRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioImagenDeleteRequest
             {
                 Codmendia = id,
                 Usumod = user
@@ -291,54 +303,53 @@ public class MenuDiarioService : IMenuDiarioService
         }
     }
 
-    public async Task<MenuDiarioResponse?> GetByIdAsync(int id, CancellationToken ct)
+    public async Task<MenuDiarioDetailResponse?> GetByIdAsync(int id, CancellationToken ct)
     {
-        var header = await _menuDiarioRepository.GetHeaderByIdAsync(id, ct);
+        var header = await _menuDiarioRepository.GetByIdAsync(id, ct);
         if (header == null) return null;
 
         var requestDetail = new DomainRepo.MenuDiarioGetDetailByMenuRequest { Codmendia = id };
 
-        var entradas = await _menuDiarioRepository.GetEntradasByMenuAsync(requestDetail, ct);
-        var platos = await _menuDiarioRepository.GetPlatosByMenuAsync(requestDetail, ct);
-        var adicionales = await _menuDiarioRepository.GetPlatoAdicionalesByMenuAsync(requestDetail, ct);
-        var imagen = await _menuDiarioRepository.GetImagenByMenuAsync(requestDetail, ct);
+        var entradas = await _menuDiarioEntradaRepository.GetByMenuAsync(requestDetail, ct);
+        var platos = await _menuDiarioPlatoRepository.GetByMenuAsync(requestDetail, ct);
+        var adicionales = await _menuDiarioPlatoAdicionalRepository.GetByMenuAsync(requestDetail, ct);
+        var imagen = await _menuDiarioImagenRepository.GetByMenuAsync(requestDetail, ct);
 
         // Map Platos + Adicionals
-        var platosList = new List<dynamic>();
+        var platosList = new List<MenuDiarioPlatoWithAdicionalResponse>();
         if (platos != null)
         {
             foreach (var p in platos)
             {
                 // Buscamos si tiene adicional. El SP de adicionales devuelve codmendiapla
-                // p.id es el ID de menu_diario_plato
-                var adicional = adicionales?.FirstOrDefault(a => a.codmendiapla == p.id);
-                
-                // Creamos un objeto anonimo extendido o diccionario
-                platosList.Add(new 
+                // p.Id es el ID de menu_diario_plato
+                var adicional = adicionales?.FirstOrDefault(a => a.Codmendiapla == p.Id);
+
+                platosList.Add(new MenuDiarioPlatoWithAdicionalResponse
                 {
-                    id = p.id,
-                    codpla = p.codpla,
-                    planom = p.planom,
-                    plades = p.plades,
-                    codtippla = p.codtippla,
-                    tipplades = p.tipplades,
-                    codest = p.codest,
-                    adicional = adicional // Puede ser null
+                    Id = p.Id,
+                    Codpla = p.Codpla,
+                    Planom = p.Planom,
+                    Plades = p.Plades,
+                    Codtippla = p.Codtippla,
+                    Tipplades = p.Tipplades,
+                    Codest = p.Codest,
+                    Adicional = adicional
                 });
             }
         }
 
-        return new MenuDiarioResponse
+        return new MenuDiarioDetailResponse
         {
-            Id = header.id,
-            Mendiafec = header.mendiafec, // String from DB
-            Codest = header.codest,
-            Fecreg = header.fecreg, // String from DB
-            Usureg = header.usureg,
-            Fecmod = header.fecmod, // String from DB (nullable)
-            Usumod = header.usumod,
+            Id = header.Id,
+            Mendiafec = header.Mendiafec, // String from DB
+            Codest = header.Codest,
+            Fecreg = header.Fecreg, // String from DB
+            Usureg = header.Usureg,
+            Fecmod = header.Fecmod, // String from DB (nullable)
+            Usumod = header.Usumod,
             Entradas = entradas.ToList(),
-            Platos = platosList, // Usamos la lista procesada
+            Platos = platosList,
             Imagen = imagen
         };
     }
@@ -374,13 +385,13 @@ public class MenuDiarioService : IMenuDiarioService
         */
 
         var reportData = await _menuDiarioRepository.GetCustomListReportAsync(ct);
-        
+
         var response = new List<MenuDiarioListItemResponse>();
-        
+
         foreach (var item in reportData)
         {
-            string fechaStr = item.mendiafec;
-            string? fecModStr = item.fecmod ?? item.fecreg; 
+            string fechaStr = item.Mendiafec;
+            string? fecModStr = item.Fecmod ?? item.Fecreg; 
             
             DateTime fechaVal;
             DateTime.TryParseExact(fechaStr, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out fechaVal);
@@ -404,23 +415,23 @@ public class MenuDiarioService : IMenuDiarioService
             var platosList = new List<TipoPlatoCount>();
             // Nota: El parsing del JSON de PostgreSQL en Dapper puede requerir System.Text.Json
             // Si viene como string:
-            if (item.platos_por_tipo != null)
+            if (item.Platos_por_tipo != null)
             {
-                string json = item.platos_por_tipo.ToString();
+                string json = item.Platos_por_tipo;
                 try {
-                     platosList = System.Text.Json.JsonSerializer.Deserialize<List<TipoPlatoCount>>(json) 
+                     platosList = System.Text.Json.JsonSerializer.Deserialize<List<TipoPlatoCount>>(json)
                                  ?? new List<TipoPlatoCount>();
                 } catch { /* Ignorar error de parseo */ }
             }
 
             response.Add(new MenuDiarioListItemResponse
             {
-                Id = item.id,
+                Id = item.Id,
                 Mendiafec = fechaStr,
-                Codest = item.codest,
+                Codest = item.Codest,
                 NombreFecha = GetFriendlyDateName(fechaVal),
                 TiempoTranscurrido = GetTimeElapsed(fecModVal),
-                CantidadEntradas = (int)(item.cantidad_entradas ?? 0),
+                CantidadEntradas = item.Cantidad_entradas ?? 0,
                 CantidadPlatosPorTipo = platosList
             });
         }

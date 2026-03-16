@@ -34,41 +34,41 @@ public class TipoEntradaRepository : ITipoEntradaRepository
 
     public async Task<int> CreateAsync(TipoEntradaInsertRequest request, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_ins_tipo_entrada",
-            new 
-            { 
-                p_tipentdes = request.Tipentdes, 
-                p_usureg = request.Usureg 
+            new
+            {
+                p_tipentdes = request.Tipentdes,
+                p_usureg = request.Usureg
             },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 
     public async Task<int> UpdateAsync(TipoEntradaUpdateRequest request, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_upd_tipo_entrada",
-            new 
-            { 
+            new
+            {
                 p_id = request.Id,
-                p_tipentdes = request.Tipentdes, 
+                p_tipentdes = request.Tipentdes,
                 p_codest = request.Codest,
                 p_usumod = request.Usumod
             },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 
     public async Task<int> DeleteAsync(int id, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_del_tipo_entrada",
             new { p_id = id },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 }

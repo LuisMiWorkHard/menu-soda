@@ -34,26 +34,26 @@ public class ImagenRepository : IImagenRepository
 
     public async Task<int> CreateAsync(ImagenInsertRequest request, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_ins_imagen",
-            new 
-            { 
+            new
+            {
                 p_imarut = request.Imarut,
                 p_imanom = request.Imanom,
                 p_imaext = request.Imaext,
-                p_usureg = request.Usureg 
+                p_usureg = request.Usureg
             },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 
     public async Task<int> UpdateAsync(ImagenUpdateRequest request, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_upd_imagen",
-            new 
-            { 
+            new
+            {
                 p_id = request.Id,
                 p_imarut = request.Imarut,
                 p_imanom = request.Imanom,
@@ -63,16 +63,16 @@ public class ImagenRepository : IImagenRepository
             },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 
     public async Task<int> DeleteAsync(int id, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_del_imagen",
             new { p_id = id },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 }

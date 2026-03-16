@@ -34,26 +34,26 @@ public class PlatoRepository : IPlatoRepository
 
     public async Task<int> CreateAsync(PlatoInsertRequest request, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_ins_plato",
-            new 
-            { 
+            new
+            {
                 p_planom = request.Planom,
                 p_plades = request.Plades,
                 p_codtippla = request.Codtippla,
-                p_usureg = request.Usureg 
+                p_usureg = request.Usureg
             },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 
     public async Task<int> UpdateAsync(PlatoUpdateRequest request, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_upd_plato",
-            new 
-            { 
+            new
+            {
                 p_id = request.Id,
                 p_planom = request.Planom,
                 p_plades = request.Plades,
@@ -63,16 +63,16 @@ public class PlatoRepository : IPlatoRepository
             },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 
     public async Task<int> DeleteAsync(int id, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<dynamic>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_del_plato",
             new { p_id = id },
             ct
         );
-        return result?.id ?? 0;
+        return result?.Id ?? 0;
     }
 }

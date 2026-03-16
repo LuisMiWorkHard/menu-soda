@@ -89,6 +89,10 @@ builder.Services.AddScoped<IImagenRepository, ImagenRepository>();
 builder.Services.AddScoped<IImagenService, ImagenService>();
 builder.Services.AddScoped<IAdicionalRepository, AdicionalRepository>();
 builder.Services.AddScoped<IMenuDiarioRepository, MenuDiarioRepository>();
+builder.Services.AddScoped<IMenuDiarioEntradaRepository, MenuDiarioEntradaRepository>();
+builder.Services.AddScoped<IMenuDiarioPlatoRepository, MenuDiarioPlatoRepository>();
+builder.Services.AddScoped<IMenuDiarioPlatoAdicionalRepository, MenuDiarioPlatoAdicionalRepository>();
+builder.Services.AddScoped<IMenuDiarioImagenRepository, MenuDiarioImagenRepository>();
 builder.Services.AddScoped<IMenuDiarioService, MenuDiarioService>();
 
 builder.Services.AddControllers();
