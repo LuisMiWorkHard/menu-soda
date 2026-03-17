@@ -31,7 +31,7 @@ public class TipoEntradaRepository : ITipoEntradaRepository
         );
     }
 
-    public async Task<int> CreateAsync(Application.Dto.TipoEntradaCreateRequest request, string currentUser, CancellationToken ct)
+    public async Task<int> CreateAsync(TipoEntradaCreateRequest request, string currentUser, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_ins_tipo_entrada",
@@ -45,7 +45,7 @@ public class TipoEntradaRepository : ITipoEntradaRepository
         return result?.Id ?? 0;
     }
 
-    public async Task<int> UpdateAsync(Application.Dto.TipoEntradaUpdateRequest request, string currentUser, CancellationToken ct)
+    public async Task<int> UpdateAsync(TipoEntradaUpdateRequest request, string currentUser, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_upd_tipo_entrada",
