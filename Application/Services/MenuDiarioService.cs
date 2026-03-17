@@ -56,7 +56,7 @@ public class MenuDiarioService : IMenuDiarioService
 
         foreach (var entId in request.EntradasIds)
         {
-            var ent = await _entradaRepository.GetByIdAsync(new DomainRepo.EntradaGetByIdRequest { Id = entId }, ct);
+            var ent = await _entradaRepository.GetByIdAsync(entId, ct);
             if (ent == null || ent.Codest == 0)
                 throw new GlobalExceptionHandler.CustomBusinessValidationException($"La entrada no existe o no está activa.");
         }
@@ -153,7 +153,7 @@ public class MenuDiarioService : IMenuDiarioService
 
         foreach (var entId in request.EntradasIds)
         {
-             var ent = await _entradaRepository.GetByIdAsync(new DomainRepo.EntradaGetByIdRequest { Id = entId }, ct);
+             var ent = await _entradaRepository.GetByIdAsync(entId, ct);
             if (ent == null || ent.Codest == 0)
                 throw new GlobalExceptionHandler.CustomBusinessValidationException($"La entrada no existe o no está activa.");
         }

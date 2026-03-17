@@ -1,4 +1,3 @@
-using MenuSoda.Domain.Models.Repositories;
 using MenuSoda.Domain.Entities;
 using MenuSoda.Domain.Interfaces.Repositories;
 using MenuSoda.Infrastructure.Persistence;
@@ -18,26 +17,26 @@ public class UserRepository : IUserRepository
         _genericRepository = genericRepository;
     }
 
-    public async Task<User?> GetByDocumentAsync(UsuarioGetByDocumentRequest request,  CancellationToken ct)
+    public async Task<User?> GetByDocumentAsync(int tipoDocumento, string numeroDocumento, CancellationToken ct)
     {
         return await _genericRepository.GetSingleByProcedureAsync<User>(
             "seguridad.sp_get_usu_tipnumdoc",
             new
             {
-                p_usutipdoc = request.TipoDocumento,
-                p_usunumdoc = request.NumeroDocumento
+                p_usutipdoc = tipoDocumento,
+                p_usunumdoc = numeroDocumento
             },
             ct
         );
     }
 
-    public async Task<User?> GetByIdAsync(UsuarioGetByIdRequest request,  CancellationToken ct)
+    public async Task<User?> GetByIdAsync(int id, CancellationToken ct)
     {
         return await _genericRepository.GetSingleByProcedureAsync<User>(
             "seguridad.sp_get_usu_id",
             new
             {
-                p_usuid = request.Id
+                p_usuid = id
             },
             ct
         );

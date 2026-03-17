@@ -1,3 +1,4 @@
+using Dto = MenuSoda.Application.Dto;
 using MenuSoda.Domain.Entities;
 using MenuSoda.Domain.Interfaces.Repositories;
 using MenuSoda.Domain.Models.Repositories;
@@ -14,52 +15,52 @@ public class EntradaRepository : IEntradaRepository
         _genericRepository = genericRepository;
     }
 
-    public async Task<Entrada?> GetByIdAsync(EntradaGetByIdRequest request, CancellationToken ct)
+    public async Task<Entrada?> GetByIdAsync(int id, CancellationToken ct)
     {
         return await _genericRepository.GetSingleByProcedureAsync<Entrada>(
             "menusoda.sp_get_entrada_id",
-            new { p_id = request.Id },
+            new { p_id = id },
             ct
         );
     }
 
-    public async Task<IEnumerable<Entrada>?> GetListAsync(EntradaGetListRequest request, CancellationToken ct)
+    public async Task<IEnumerable<Entrada>?> GetListAsync(string? filter, CancellationToken ct)
     {
         return await _genericRepository.GetListByProcedureAsync<Entrada>(
             "menusoda.sp_get_entrada_list",
-            new { p_entdes = request.Entdes },
+            new { p_entdes = filter },
             ct
         );
     }
 
-    public async Task<int> CreateAsync(EntradaInsertRequest request, CancellationToken ct)
+    public async Task<int> CreateAsync(EntradaCreateRequest request, string currentUser, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_ins_entrada",
             new
             {
-                p_entdes = request.Entdes,
-                p_entdeslar = request.Entdeslar,
-                p_codtipent = request.Codtipent,
-                p_codima = request.Codima,
-                p_usureg = request.Usureg
+                p_entdes = request.Descripcion,
+                p_entdeslar = request.DescripcionLarga,
+                p_codtipent = request.TipoEntradaId,
+                p_codima = request.ImagenId,
+                p_usureg = currentUser
             },
             ct
         );
         return result?.Id ?? 0;
     }
 
-    public async Task<int> UpdateAsync(EntradaUpdateRequest request, CancellationToken ct)
+    public async Task<int> UpdateAsync(EntradaUpdateRequest request, string currentUser, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_upd_entrada",
             new
             {
                 p_id = request.Id,
-                p_entdes = request.Entdes,
-                p_codtipent = request.Codtipent,
-                p_codest = request.Codest,
-                p_usumod = request.Usumod
+                p_entdes = request.Descripcion,
+                p_codtipent = request.TipoEntradaId,
+                p_codest = request.EstadoId,
+                p_usumod = currentUser
             },
             ct
         );

@@ -1,11 +1,10 @@
-using MenuSoda.Domain.Models.Repositories;
 using MenuSoda.Domain.Entities;
 
 namespace MenuSoda.Domain.Interfaces.Repositories;
 
 public interface IUserRepository
 {
-    Task<User?> GetByDocumentAsync(UsuarioGetByDocumentRequest request, CancellationToken ct);
-    Task<User?> GetByIdAsync(UsuarioGetByIdRequest request, CancellationToken ct);
+    Task<User?> GetByDocumentAsync(int tipoDocumento, string numeroDocumento, CancellationToken ct);
+    Task<User?> GetByIdAsync(int id, CancellationToken ct);
     Task ActualizarBloqueoAsync(User usuario, int maxAttempts, int lockoutMinutes, CancellationToken ct);
 }

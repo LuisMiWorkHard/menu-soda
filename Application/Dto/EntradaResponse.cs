@@ -1,15 +1,34 @@
+using MenuSoda.Domain.Entities;
+
 namespace MenuSoda.Application.Dto;
 
 public class EntradaResponse
 {
     public int Id { get; set; }
-    public string Entdes { get; set; } = "";
-    public string? Entdeslar { get; set; }
-    public int Codest { get; set; }
-    public int Codtipent { get; set; }
-    public int? Codima { get; set; }
-    public string Fecreg { get; set; } = "";
-    public string Usureg { get; set; } = "";
-    public string? Fecmod { get; set; }
-    public string? Usumod { get; set; }
+    public string Descripcion { get; set; } = "";
+    public string DescripcionLarga { get; set; } = "";
+    public int EstadoId { get; set; }
+    public int TipoEntradaId { get; set; }
+    public int ImagenId { get; set; }
+    public string FechaRegistro { get; set; } = "";
+    public string UsuarioRegistro { get; set; } = "";
+    public string FechaModificacion { get; set; } = "";
+    public string UsuarioModificacion { get; set; } = "";
+
+    public static EntradaResponse FromEntity(Entrada entrada)
+    {
+        return new EntradaResponse
+        {
+            Id = entrada.Id,
+            Descripcion = entrada.Entdes,
+            DescripcionLarga = entrada.Entdeslar ?? "",
+            EstadoId = entrada.Codest,
+            TipoEntradaId = entrada.Codtipent,
+            ImagenId = entrada.Codima ?? 0,
+            FechaRegistro = entrada.Fecreg,
+            UsuarioRegistro = entrada.Usureg,
+            FechaModificacion = entrada.Fecmod ?? "",
+            UsuarioModificacion = entrada.Usumod ?? ""
+        };
+    }
 }

@@ -1,5 +1,7 @@
 using MenuSoda.Application.Services;
 using MenuSoda.Application.Interfaces;
+using MenuSoda.Application.UseCases.Auth;
+using MenuSoda.Application.UseCases.Entrada;
 using MenuSoda.Domain.Interfaces.Security;
 using MenuSoda.Domain.Interfaces.Repositories;
 using MenuSoda.Infrastructure.Middleware;
@@ -72,13 +74,19 @@ builder.Services.AddAuthorization();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<LoginUseCase>();
+builder.Services.AddScoped<ObtenerRefreshTokenUseCase>();
+builder.Services.AddScoped<LogoutUseCase>();
 builder.Services.AddScoped<UtilService>();
 
 builder.Services.AddScoped<IRefreshToken, DapperRefreshTokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IEntradaRepository, EntradaRepository>();
-builder.Services.AddScoped<IEntradaService, EntradaService>();
+builder.Services.AddScoped<ObtenerEntradaPorIdUseCase>();
+builder.Services.AddScoped<ListarEntradasUseCase>();
+builder.Services.AddScoped<CrearEntradaUseCase>();
+builder.Services.AddScoped<ActualizarEntradaUseCase>();
+builder.Services.AddScoped<EliminarEntradaUseCase>();
 builder.Services.AddScoped<ITipoEntradaRepository, TipoEntradaRepository>();
 builder.Services.AddScoped<ITipoEntradaService, TipoEntradaService>();
 builder.Services.AddScoped<ITipoPlatoRepository, TipoPlatoRepository>();

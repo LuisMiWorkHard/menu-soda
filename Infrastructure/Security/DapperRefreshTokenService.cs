@@ -2,8 +2,10 @@ using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using Dapper;
+using MenuSoda.Application.Dto;
+using MenuSoda.Application.Interfaces;
+using MenuSoda.Domain.Entities;
 using MenuSoda.Domain.Models.Security;
-using MenuSoda.Domain.Interfaces.Security;
 
 public class DapperRefreshTokenService : IRefreshToken
 {
@@ -15,7 +17,7 @@ public class DapperRefreshTokenService : IRefreshToken
         _genericRepository = genericRepository;
     } 
 
-    public async Task<RefreshTokenCreateResponse> CreateAsync(RefreshTokenCreateRequest request, CancellationToken ct)
+    public async Task<RefreshTokenCreateResponse> CreateAsync(User user, LoginRequest request, int daysToExpire, CancellationToken ct)
     {
         var plain = GenerateToken(64);
         var hash = Hash(plain);
@@ -23,14 +25,14 @@ public class DapperRefreshTokenService : IRefreshToken
         var parameters = new DynamicParameters();
 
         // IN
-        parameters.Add("p_usuid", request.UserId, DbType.Int32);
+        parameters.Add("p_usuid", user.Id, DbType.Int32);
         parameters.Add("p_tokenhash", hash, DbType.String);
         parameters.Add("p_ipcre", request.IpAddress, DbType.String);
         parameters.Add("p_useragent", request.UserAgent, DbType.String);
         parameters.Add("p_deviceid", request.DeviceId, DbType.String);
-        parameters.Add("p_geolat", request.GeoLat, DbType.Decimal);
-        parameters.Add("p_geolon", request.GeoLon, DbType.Decimal);
-        parameters.Add("p_days_to_expire", request.DaysToExpire, DbType.Int32);
+        parameters.Add("p_geolat", request.Latitud, DbType.Decimal);
+        parameters.Add("p_geolon", request.Longitud, DbType.Decimal);
+        parameters.Add("p_days_to_expire", daysToExpire, DbType.Int32);
 
         // INOUT (PostgreSQL PROCEDURE needs InputOutput for Npgsql to allow named args in CALL)
         parameters.Add("p_id", dbType: DbType.Guid, direction: ParameterDirection.InputOutput);
@@ -87,7 +89,7 @@ public class DapperRefreshTokenService : IRefreshToken
         );
     }
 
-    public async Task<RefreshTokenRotateResponse> RotateAsync(RefreshTokenRotateRequest request, CancellationToken ct)
+    public async Task<RefreshTokenRotateResponse> RotateAsync(RefreshTokenGetByHashResponse tokenInfo, ObtenerRefreshTokenRequest request, int daysToExpire, CancellationToken ct)
     {
         var newPlain = GenerateToken(64);
         var newHash = Hash(newPlain);
@@ -95,15 +97,15 @@ public class DapperRefreshTokenService : IRefreshToken
         var parameters = new DynamicParameters();
 
         // IN
-        parameters.Add("p_oldid", request.OldTokenId, DbType.Guid);
-        parameters.Add("p_usuid", request.UserId, DbType.Int32);
+        parameters.Add("p_oldid", tokenInfo.Id, DbType.Guid);
+        parameters.Add("p_usuid", tokenInfo.UserId, DbType.Int32);
         parameters.Add("p_tokenhash", newHash, DbType.String);
         parameters.Add("p_ipcre", request.IpAddress, DbType.String);
         parameters.Add("p_useragent", request.UserAgent, DbType.String);
         parameters.Add("p_deviceid", request.DeviceId, DbType.String);
-        parameters.Add("p_geolat", request.GeoLat, DbType.Decimal);
-        parameters.Add("p_geolon", request.GeoLon, DbType.Decimal);
-        parameters.Add("p_days_to_expire", request.DaysToExpire, DbType.Int32);
+        parameters.Add("p_geolat", request.Latitud, DbType.Decimal);
+        parameters.Add("p_geolon", request.Longitud, DbType.Decimal);
+        parameters.Add("p_days_to_expire", daysToExpire, DbType.Int32);
 
         parameters.Add("p_id", dbType: DbType.Guid, direction: ParameterDirection.InputOutput);
         parameters.Add("p_fecexputc", dbType: DbType.DateTime, direction: ParameterDirection.InputOutput);

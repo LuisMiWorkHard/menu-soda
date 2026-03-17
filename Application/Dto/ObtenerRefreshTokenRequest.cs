@@ -1,6 +1,6 @@
 namespace MenuSoda.Application.Dto
 {
-    public class RefreshServiceRequest
+    public class ObtenerRefreshTokenRequest
     {
         public string RefreshToken { get; set; } = null!;
         public string? IpAddress { get; set; }
