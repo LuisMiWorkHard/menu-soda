@@ -1,7 +1,7 @@
+using MenuSoda.Application.Dto;
+using MenuSoda.Application.UseCases.TipoEntrada;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MenuSoda.Application.Dto;
-using MenuSoda.Application.Interfaces;
 using System.Security.Claims;
 
 namespace MenuSoda.Api.Controllers;
@@ -11,17 +11,30 @@ namespace MenuSoda.Api.Controllers;
 [Route("api/[controller]")]
 public class TipoEntradaController : ControllerBase
 {
-    private readonly ITipoEntradaService _tipoEntradaService;
+    private readonly ObtenerTipoEntradaPorIdUseCase _getByIdUseCase;
+    private readonly ListarTiposEntradaUseCase _getListUseCase;
+    private readonly CrearTipoEntradaUseCase _createUseCase;
+    private readonly ActualizarTipoEntradaUseCase _updateUseCase;
+    private readonly EliminarTipoEntradaUseCase _deleteUseCase;
 
-    public TipoEntradaController(ITipoEntradaService tipoEntradaService)
+    public TipoEntradaController(
+        ObtenerTipoEntradaPorIdUseCase getByIdUseCase,
+        ListarTiposEntradaUseCase getListUseCase,
+        CrearTipoEntradaUseCase createUseCase,
+        ActualizarTipoEntradaUseCase updateUseCase,
+        EliminarTipoEntradaUseCase deleteUseCase)
     {
-        _tipoEntradaService = tipoEntradaService;
+        _getByIdUseCase = getByIdUseCase;
+        _getListUseCase = getListUseCase;
+        _createUseCase = createUseCase;
+        _updateUseCase = updateUseCase;
+        _deleteUseCase = deleteUseCase;
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id, CancellationToken ct)
     {
-        var result = await _tipoEntradaService.GetByIdAsync(id, ct);
+        var result = await _getByIdUseCase.ExecuteAsync(id, ct);
         if (result == null) return NotFound();
         return Ok(result);
     }
@@ -29,7 +42,7 @@ public class TipoEntradaController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetList([FromQuery] string? descripcion, CancellationToken ct)
     {
-        var result = await _tipoEntradaService.GetListAsync(descripcion, ct);
+        var result = await _getListUseCase.ExecuteAsync(descripcion, ct);
         return Ok(result);
     }
 
@@ -37,14 +50,7 @@ public class TipoEntradaController : ControllerBase
     public async Task<IActionResult> Create([FromBody] TipoEntradaCreateRequest request, CancellationToken ct)
     {
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-        
-        var serviceRequest = new TipoEntradaCreateServiceRequest
-        {
-            Tipentdes = request.Tipentdes,
-            Usureg = currentUser
-        };
-
-        var id = await _tipoEntradaService.CreateAsync(serviceRequest, ct);
+        var id = await _createUseCase.ExecuteAsync(request, currentUser, ct);
         
         if (id > 0)
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
@@ -58,16 +64,7 @@ public class TipoEntradaController : ControllerBase
         if (id != request.Id) return BadRequest("El ID de la URL no coincide con el cuerpo de la solicitud.");
 
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-
-        var serviceRequest = new TipoEntradaUpdateServiceRequest
-        {
-            Id = request.Id,
-            Tipentdes = request.Tipentdes,
-            Codest = request.Codest,
-            Usumod = currentUser
-        };
-
-        var success = await _tipoEntradaService.UpdateAsync(serviceRequest, ct);
+        var success = await _updateUseCase.ExecuteAsync(request, currentUser, ct);
 
         if (!success) return NotFound();
 
@@ -77,7 +74,7 @@ public class TipoEntradaController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var success = await _tipoEntradaService.DeleteAsync(id, ct);
+        var success = await _deleteUseCase.ExecuteAsync(id, ct);
         if (!success) return NotFound();
 
         return NoContent();

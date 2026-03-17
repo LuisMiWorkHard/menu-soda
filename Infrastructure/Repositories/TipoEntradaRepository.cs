@@ -1,6 +1,5 @@
 using MenuSoda.Domain.Entities;
 using MenuSoda.Domain.Interfaces.Repositories;
-using MenuSoda.Domain.Models.Repositories;
 using MenuSoda.Infrastructure.Persistence;
 
 namespace MenuSoda.Infrastructure.Repositories;
@@ -32,21 +31,21 @@ public class TipoEntradaRepository : ITipoEntradaRepository
         );
     }
 
-    public async Task<int> CreateAsync(TipoEntradaInsertRequest request, CancellationToken ct)
+    public async Task<int> CreateAsync(Application.Dto.TipoEntradaCreateRequest request, string currentUser, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_ins_tipo_entrada",
             new
             {
                 p_tipentdes = request.Tipentdes,
-                p_usureg = request.Usureg
+                p_usureg = currentUser
             },
             ct
         );
         return result?.Id ?? 0;
     }
 
-    public async Task<int> UpdateAsync(TipoEntradaUpdateRequest request, CancellationToken ct)
+    public async Task<int> UpdateAsync(Application.Dto.TipoEntradaUpdateRequest request, string currentUser, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_upd_tipo_entrada",
@@ -55,7 +54,7 @@ public class TipoEntradaRepository : ITipoEntradaRepository
                 p_id = request.Id,
                 p_tipentdes = request.Tipentdes,
                 p_codest = request.Codest,
-                p_usumod = request.Usumod
+                p_usumod = currentUser
             },
             ct
         );
