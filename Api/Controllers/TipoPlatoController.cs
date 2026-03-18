@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MenuSoda.Application.Dto;
-using MenuSoda.Application.Interfaces;
+using MenuSoda.Application.UseCases.TipoPlato;
 using System.Security.Claims;
 
 namespace MenuSoda.Api.Controllers;
@@ -11,17 +11,30 @@ namespace MenuSoda.Api.Controllers;
 [Route("api/[controller]")]
 public class TipoPlatoController : ControllerBase
 {
-    private readonly ITipoPlatoService _tipoPlatoService;
+    private readonly ObtenerTipoPlatoPorIdUseCase _getByIdUseCase;
+    private readonly ListarTiposPlatoUseCase _getListUseCase;
+    private readonly CrearTipoPlatoUseCase _createUseCase;
+    private readonly ActualizarTipoPlatoUseCase _updateUseCase;
+    private readonly EliminarTipoPlatoUseCase _deleteUseCase;
 
-    public TipoPlatoController(ITipoPlatoService tipoPlatoService)
+    public TipoPlatoController(
+        ObtenerTipoPlatoPorIdUseCase getByIdUseCase,
+        ListarTiposPlatoUseCase getListUseCase,
+        CrearTipoPlatoUseCase createUseCase,
+        ActualizarTipoPlatoUseCase updateUseCase,
+        EliminarTipoPlatoUseCase deleteUseCase)
     {
-        _tipoPlatoService = tipoPlatoService;
+        _getByIdUseCase = getByIdUseCase;
+        _getListUseCase = getListUseCase;
+        _createUseCase = createUseCase;
+        _updateUseCase = updateUseCase;
+        _deleteUseCase = deleteUseCase;
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id, CancellationToken ct)
     {
-        var result = await _tipoPlatoService.GetByIdAsync(id, ct);
+        var result = await _getByIdUseCase.ExecuteAsync(id, ct);
         if (result == null) return NotFound();
         return Ok(result);
     }
@@ -29,7 +42,7 @@ public class TipoPlatoController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetList([FromQuery] string? descripcion, CancellationToken ct)
     {
-        var result = await _tipoPlatoService.GetListAsync(descripcion, ct);
+        var result = await _getListUseCase.ExecuteAsync(descripcion, ct);
         return Ok(result);
     }
 
@@ -37,19 +50,12 @@ public class TipoPlatoController : ControllerBase
     public async Task<IActionResult> Create([FromBody] TipoPlatoCreateRequest request, CancellationToken ct)
     {
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-        
-        var serviceRequest = new TipoPlatoCreateServiceRequest
-        {
-            Tipplades = request.Tipplades,
-            Usureg = currentUser
-        };
+        var id = await _createUseCase.ExecuteAsync(request, currentUser, ct);
 
-        var id = await _tipoPlatoService.CreateAsync(serviceRequest, ct);
-        
         if (id > 0)
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
-            
-        return BadRequest(); 
+
+        return BadRequest();
     }
 
     [HttpPut("{id}")]
@@ -58,16 +64,7 @@ public class TipoPlatoController : ControllerBase
         if (id != request.Id) return BadRequest("El ID de la URL no coincide con el cuerpo de la solicitud.");
 
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-
-        var serviceRequest = new TipoPlatoUpdateServiceRequest
-        {
-            Id = request.Id,
-            Tipplades = request.Tipplades,
-            Codest = request.Codest,
-            Usumod = currentUser
-        };
-
-        var success = await _tipoPlatoService.UpdateAsync(serviceRequest, ct);
+        var success = await _updateUseCase.ExecuteAsync(request, currentUser, ct);
 
         if (!success) return NotFound();
 
@@ -77,7 +74,7 @@ public class TipoPlatoController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var success = await _tipoPlatoService.DeleteAsync(id, ct);
+        var success = await _deleteUseCase.ExecuteAsync(id, ct);
         if (!success) return NotFound();
 
         return NoContent();

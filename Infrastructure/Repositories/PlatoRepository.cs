@@ -1,3 +1,4 @@
+using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Entities;
 using MenuSoda.Domain.Interfaces.Repositories;
 using MenuSoda.Domain.Models.Repositories;
@@ -32,7 +33,7 @@ public class PlatoRepository : IPlatoRepository
         );
     }
 
-    public async Task<int> CreateAsync(PlatoInsertRequest request, CancellationToken ct)
+    public async Task<int> CreateAsync(PlatoCreateRequest request, string currentUser, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_ins_plato",
@@ -41,14 +42,14 @@ public class PlatoRepository : IPlatoRepository
                 p_planom = request.Planom,
                 p_plades = request.Plades,
                 p_codtippla = request.Codtippla,
-                p_usureg = request.Usureg
+                p_usureg = currentUser
             },
             ct
         );
         return result?.Id ?? 0;
     }
 
-    public async Task<int> UpdateAsync(PlatoUpdateRequest request, CancellationToken ct)
+    public async Task<int> UpdateAsync(PlatoUpdateRequest request, string currentUser, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_upd_plato",
@@ -59,7 +60,7 @@ public class PlatoRepository : IPlatoRepository
                 p_plades = request.Plades,
                 p_codtippla = request.Codtippla,
                 p_codest = request.Codest,
-                p_usumod = request.Usumod
+                p_usumod = currentUser
             },
             ct
         );

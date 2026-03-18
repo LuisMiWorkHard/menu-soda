@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MenuSoda.Application.Dto;
-using MenuSoda.Application.Interfaces;
+using MenuSoda.Application.UseCases.Plato;
 using System.Security.Claims;
 
 namespace MenuSoda.Api.Controllers;
@@ -11,17 +11,30 @@ namespace MenuSoda.Api.Controllers;
 [Route("api/[controller]")]
 public class PlatoController : ControllerBase
 {
-    private readonly IPlatoService _platoService;
+    private readonly ObtenerPlatoPorIdUseCase _getByIdUseCase;
+    private readonly ListarPlatosUseCase _getListUseCase;
+    private readonly CrearPlatoUseCase _createUseCase;
+    private readonly ActualizarPlatoUseCase _updateUseCase;
+    private readonly EliminarPlatoUseCase _deleteUseCase;
 
-    public PlatoController(IPlatoService platoService)
+    public PlatoController(
+        ObtenerPlatoPorIdUseCase getByIdUseCase,
+        ListarPlatosUseCase getListUseCase,
+        CrearPlatoUseCase createUseCase,
+        ActualizarPlatoUseCase updateUseCase,
+        EliminarPlatoUseCase deleteUseCase)
     {
-        _platoService = platoService;
+        _getByIdUseCase = getByIdUseCase;
+        _getListUseCase = getListUseCase;
+        _createUseCase = createUseCase;
+        _updateUseCase = updateUseCase;
+        _deleteUseCase = deleteUseCase;
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id, CancellationToken ct)
     {
-        var result = await _platoService.GetByIdAsync(id, ct);
+        var result = await _getByIdUseCase.ExecuteAsync(id, ct);
         if (result == null) return NotFound();
         return Ok(result);
     }
@@ -29,7 +42,7 @@ public class PlatoController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetList([FromQuery] string? nombre, CancellationToken ct)
     {
-        var result = await _platoService.GetListAsync(nombre, ct);
+        var result = await _getListUseCase.ExecuteAsync(nombre, ct);
         return Ok(result);
     }
 
@@ -37,21 +50,12 @@ public class PlatoController : ControllerBase
     public async Task<IActionResult> Create([FromBody] PlatoCreateRequest request, CancellationToken ct)
     {
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-        
-        var serviceRequest = new PlatoCreateServiceRequest
-        {
-            Planom = request.Planom,
-            Plades = request.Plades,
-            Codtippla = request.Codtippla,
-            Usureg = currentUser
-        };
+        var id = await _createUseCase.ExecuteAsync(request, currentUser, ct);
 
-        var id = await _platoService.CreateAsync(serviceRequest, ct);
-        
         if (id > 0)
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
-            
-        return BadRequest(); 
+
+        return BadRequest();
     }
 
     [HttpPut("{id}")]
@@ -60,18 +64,7 @@ public class PlatoController : ControllerBase
         if (id != request.Id) return BadRequest("El ID de la URL no coincide con el cuerpo de la solicitud.");
 
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-        
-        var serviceRequest = new PlatoUpdateServiceRequest
-        {
-            Id = request.Id,
-            Planom = request.Planom,
-            Plades = request.Plades,
-            Codtippla = request.Codtippla,
-            Codest = request.Codest,
-            Usumod = currentUser
-        };
-
-        var success = await _platoService.UpdateAsync(serviceRequest, ct);
+        var success = await _updateUseCase.ExecuteAsync(request, currentUser, ct);
 
         if (!success) return NotFound();
 
@@ -81,7 +74,7 @@ public class PlatoController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var success = await _platoService.DeleteAsync(id, ct);
+        var success = await _deleteUseCase.ExecuteAsync(id, ct);
         if (!success) return NotFound();
 
         return NoContent();

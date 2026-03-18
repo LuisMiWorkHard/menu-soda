@@ -1,3 +1,4 @@
+using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Entities;
 using MenuSoda.Domain.Interfaces.Repositories;
 using MenuSoda.Domain.Models.Repositories;
@@ -32,21 +33,21 @@ public class TipoPlatoRepository : ITipoPlatoRepository
         );
     }
 
-    public async Task<int> CreateAsync(TipoPlatoInsertRequest request, CancellationToken ct)
+    public async Task<int> CreateAsync(TipoPlatoCreateRequest request, string currentUser, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_ins_tipo_plato",
             new
             {
                 p_tipplades = request.Tipplades,
-                p_usureg = request.Usureg
+                p_usureg = currentUser
             },
             ct
         );
         return result?.Id ?? 0;
     }
 
-    public async Task<int> UpdateAsync(TipoPlatoUpdateRequest request, CancellationToken ct)
+    public async Task<int> UpdateAsync(TipoPlatoUpdateRequest request, string currentUser, CancellationToken ct)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_upd_tipo_plato",
@@ -55,7 +56,7 @@ public class TipoPlatoRepository : ITipoPlatoRepository
                 p_id = request.Id,
                 p_tipplades = request.Tipplades,
                 p_codest = request.Codest,
-                p_usumod = request.Usumod
+                p_usumod = currentUser
             },
             ct
         );
