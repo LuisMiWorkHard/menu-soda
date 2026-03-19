@@ -1,3 +1,4 @@
+using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Entities;
 using MenuSoda.Domain.Interfaces.Repositories;
 using MenuSoda.Domain.Models.Repositories;
@@ -14,11 +15,11 @@ public class MenuDiarioRepository : IMenuDiarioRepository
         _genericRepository = genericRepository;
     }
 
-    public async Task<int> CreateAsync(MenuDiarioInsertRequest request, CancellationToken ct, System.Data.IDbTransaction? transaction = null)
+    public async Task<int> CreateAsync(MenuDiarioCreateRequest request, string currentUser, CancellationToken ct, System.Data.IDbTransaction? transaction = null)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_ins_menu_diario",
-            new { p_mendiafec = request.Mendiafec, p_usureg = request.Usureg },
+            new { p_mendiafec = request.Mendiafec, p_usureg = currentUser },
             ct,
             "result_cur",
             (Npgsql.NpgsqlTransaction?)transaction
@@ -26,11 +27,11 @@ public class MenuDiarioRepository : IMenuDiarioRepository
         return result?.Id ?? 0;
     }
 
-    public async Task<int> UpdateAsync(MenuDiarioUpdateRequest request, CancellationToken ct, System.Data.IDbTransaction? transaction = null)
+    public async Task<int> UpdateAsync(MenuDiarioUpdateRequest request, string currentUser, CancellationToken ct, System.Data.IDbTransaction? transaction = null)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
             "menusoda.sp_upd_menu_diario",
-            new { p_id = request.Id, p_mendiafec = request.Mendiafec, p_codest = request.Codest, p_usumod = request.Usumod },
+            new { p_id = request.Id, p_mendiafec = request.Mendiafec, p_codest = request.Codest, p_usumod = currentUser },
             ct,
             "result_cur",
             (Npgsql.NpgsqlTransaction?)transaction

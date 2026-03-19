@@ -1,5 +1,6 @@
 using MenuSoda.Domain.Entities;
 using MenuSoda.Domain.Models.Repositories;
+using MenuSoda.Application.Dto;
 
 namespace MenuSoda.Domain.Interfaces.Repositories;
 
@@ -9,8 +10,8 @@ namespace MenuSoda.Domain.Interfaces.Repositories;
 public interface IMenuDiarioRepository
 {
     // CRUD básico de MenuDiario (solo entidad principal)
-    Task<int> CreateAsync(MenuDiarioInsertRequest request, CancellationToken ct, System.Data.IDbTransaction? transaction = null);
-    Task<int> UpdateAsync(MenuDiarioUpdateRequest request, CancellationToken ct, System.Data.IDbTransaction? transaction = null);
+    Task<int> CreateAsync(MenuDiarioCreateRequest request, string currentUser, CancellationToken ct, System.Data.IDbTransaction? transaction = null);
+    Task<int> UpdateAsync(MenuDiarioUpdateRequest request, string currentUser, CancellationToken ct, System.Data.IDbTransaction? transaction = null);
     Task<int> DeleteAsync(int id, CancellationToken ct, System.Data.IDbTransaction? transaction = null);
     Task<MenuDiarioResponse?> GetByIdAsync(int id, CancellationToken ct);
 

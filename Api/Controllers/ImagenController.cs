@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 using MenuSoda.Application.Options;
+using MenuSoda.Application.UseCases.Imagen;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
@@ -13,13 +14,28 @@ namespace MenuSoda.Api.Controllers;
 [Route("api/[controller]")]
 public class ImagenController : ControllerBase
 {
-    private readonly IImagenService _imagenService;
+    private readonly ObtenerImagenPorIdUseCase _getByIdUseCase;
+    private readonly ListarImagenesUseCase _getListUseCase;
+    private readonly CrearImagenUseCase _createUseCase;
+    private readonly ActualizarImagenUseCase _updateUseCase;
+    private readonly EliminarImagenUseCase _deleteUseCase;
     private readonly IStorageService _storageService;
     private readonly GcsOptions _gcsOptions;
 
-    public ImagenController(IImagenService imagenService, IStorageService storageService, IOptions<GcsOptions> gcsOptions)
+    public ImagenController(
+        ObtenerImagenPorIdUseCase getByIdUseCase,
+        ListarImagenesUseCase getListUseCase,
+        CrearImagenUseCase createUseCase,
+        ActualizarImagenUseCase updateUseCase,
+        EliminarImagenUseCase deleteUseCase,
+        IStorageService storageService,
+        IOptions<GcsOptions> gcsOptions)
     {
-        _imagenService = imagenService;
+        _getByIdUseCase = getByIdUseCase;
+        _getListUseCase = getListUseCase;
+        _createUseCase = createUseCase;
+        _updateUseCase = updateUseCase;
+        _deleteUseCase = deleteUseCase;
         _storageService = storageService;
         _gcsOptions = gcsOptions.Value;
     }
@@ -27,7 +43,7 @@ public class ImagenController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id, CancellationToken ct)
     {
-        var result = await _imagenService.GetByIdAsync(id, ct);
+        var result = await _getByIdUseCase.ExecuteAsync(id, ct);
         if (result == null) return NotFound();
         return Ok(result);
     }
@@ -35,7 +51,7 @@ public class ImagenController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetList([FromQuery] string? nombre, CancellationToken ct)
     {
-        var result = await _imagenService.GetListAsync(nombre, ct);
+        var result = await _getListUseCase.ExecuteAsync(nombre, ct);
         return Ok(result);
     }
 
@@ -71,19 +87,18 @@ public class ImagenController : ControllerBase
         using var stream = file.OpenReadStream();
         await _storageService.UploadAsync(stream, objectName, contentTypeMap[extension], ct);
 
-        var serviceRequest = new ImagenCreateServiceRequest
+        var request = new ImagenCreateRequest
         {
             Imarut = objectName,
             Imanom = guid,
-            Imaext = extension,
-            Usureg = currentUser
+            Imaext = extension
         };
 
-        var id = await _imagenService.CreateAsync(serviceRequest, ct);
+        var id = await _createUseCase.ExecuteAsync(request, currentUser, ct);
 
         if (id > 0)
         {
-            var created = await _imagenService.GetByIdAsync(id, ct);
+            var created = await _getByIdUseCase.ExecuteAsync(id, ct);
             return CreatedAtAction(nameof(GetById), new { id }, created);
         }
 
@@ -94,21 +109,13 @@ public class ImagenController : ControllerBase
     public async Task<IActionResult> Create([FromBody] ImagenCreateRequest request, CancellationToken ct)
     {
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-        
-        var serviceRequest = new ImagenCreateServiceRequest
-        {
-            Imarut = request.Imarut,
-            Imanom = request.Imanom,
-            Imaext = request.Imaext,
-            Usureg = currentUser
-        };
 
-        var id = await _imagenService.CreateAsync(serviceRequest, ct);
-        
+        var id = await _createUseCase.ExecuteAsync(request, currentUser, ct);
+
         if (id > 0)
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
-            
-        return BadRequest(); 
+
+        return BadRequest();
     }
 
     [HttpPut("{id}")]
@@ -118,17 +125,7 @@ public class ImagenController : ControllerBase
 
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
 
-        var serviceRequest = new ImagenUpdateServiceRequest
-        {
-            Id = request.Id,
-            Imarut = request.Imarut,
-            Imanom = request.Imanom,
-            Imaext = request.Imaext,
-            Codest = request.Codest,
-            Usumod = currentUser
-        };
-
-        var success = await _imagenService.UpdateAsync(serviceRequest, ct);
+        var success = await _updateUseCase.ExecuteAsync(request, currentUser, ct);
 
         if (!success) return NotFound();
 
@@ -138,7 +135,7 @@ public class ImagenController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        var success = await _imagenService.DeleteAsync(id, ct);
+        var success = await _deleteUseCase.ExecuteAsync(id, ct);
         if (!success) return NotFound();
 
         return NoContent();

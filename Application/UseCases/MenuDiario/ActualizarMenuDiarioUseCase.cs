@@ -84,14 +84,7 @@ public class ActualizarMenuDiarioUseCase
         try
         {
             // A. Update Header
-            var headerUpdate = new DomainRepo.MenuDiarioUpdateRequest
-            {
-                Id = request.Id,
-                Mendiafec = request.Mendiafec,
-                Codest = request.Codest,
-                Usumod = currentUser
-            };
-            await _menuDiarioRepository.UpdateAsync(headerUpdate, ct, transaction);
+            await _menuDiarioRepository.UpdateAsync(request, currentUser, ct, transaction);
 
             // B. Gestión Hijos: Estrategia Delete-Reinsert
 

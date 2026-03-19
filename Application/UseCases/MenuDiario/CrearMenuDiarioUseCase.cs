@@ -79,12 +79,7 @@ public class CrearMenuDiarioUseCase
         try
         {
             // A. Insertar Header
-            var headerRequest = new DomainRepo.MenuDiarioInsertRequest
-            {
-                Mendiafec = request.Mendiafec,
-                Usureg = currentUser
-            };
-            var menuId = await _menuDiarioRepository.CreateAsync(headerRequest, ct, transaction);
+            var menuId = await _menuDiarioRepository.CreateAsync(request, currentUser, ct, transaction);
 
             // B. Insertar Detalles
             await _menuDiarioImagenRepository.AddAsync(new DomainRepo.MenuDiarioImagenInsertRequest
