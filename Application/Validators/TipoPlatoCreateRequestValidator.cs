@@ -7,7 +7,7 @@ public class TipoPlatoCreateRequestValidator : AbstractValidator<TipoPlatoCreate
 {
     public TipoPlatoCreateRequestValidator()
     {
-        RuleFor(x => x.Tipplades)
+        RuleFor(x => x.Descripcion)
             .NotEmpty().WithMessage("La descripción es obligatoria.")
             .MaximumLength(100).WithMessage("La descripción no puede exceder los 100 caracteres.");
     }

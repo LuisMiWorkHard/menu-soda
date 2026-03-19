@@ -21,22 +21,8 @@ public class ListarImagenesUseCase
         var entities = await _imagenRepository.GetListAsync(nombre, ct);
         if (entities == null) return Enumerable.Empty<ImagenResponse>();
 
-        return entities.Select(MapToResponse);
+        return entities.Select(e => MenuSoda.Application.Mappers.ImagenMapper.ToResponse(e, _storageService));
     }
 
-    private ImagenResponse MapToResponse(Domain.Entities.Imagen entity)
-    {
-        return new ImagenResponse
-        {
-            Id = entity.Id,
-            Imarut = _storageService.GetSignedUrl(entity.Imarut),
-            Imanom = entity.Imanom,
-            Imaext = entity.Imaext,
-            Codest = entity.Codest,
-            Fecreg = entity.Fecreg,
-            Usureg = entity.Usureg,
-            Fecmod = entity.Fecmod,
-            Usumod = entity.Usumod
-        };
-    }
+
 }

@@ -63,12 +63,12 @@ public class ObtenerMenuDiarioPorIdUseCase
         return new MenuDiarioDetailResponse
         {
             Id = header.Id,
-            Mendiafec = header.Mendiafec,
-            Codest = header.Codest,
-            Fecreg = header.Fecreg,
-            Usureg = header.Usureg,
-            Fecmod = header.Fecmod,
-            Usumod = header.Usumod,
+            Fecha = header.Mendiafec,
+            EstadoId = header.Codest,
+            FechaRegistro = header.Fecreg,
+            UsuarioRegistro = header.Usureg,
+            FechaModificacion = header.Fecmod,
+            UsuarioModificacion = header.Usumod,
             Entradas = entradas.ToList(),
             Platos = platosList,
             Imagen = imagen

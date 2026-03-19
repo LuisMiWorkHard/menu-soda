@@ -15,20 +15,5 @@ public class EntradaResponse
     public string FechaModificacion { get; set; } = "";
     public string UsuarioModificacion { get; set; } = "";
 
-    public static EntradaResponse FromEntity(Entrada entrada)
-    {
-        return new EntradaResponse
-        {
-            Id = entrada.Id,
-            Descripcion = entrada.Entdes,
-            DescripcionLarga = entrada.Entdeslar ?? "",
-            EstadoId = entrada.Codest,
-            TipoEntradaId = entrada.Codtipent,
-            ImagenId = entrada.Codima ?? 0,
-            FechaRegistro = entrada.Fecreg,
-            UsuarioRegistro = entrada.Usureg,
-            FechaModificacion = entrada.Fecmod ?? "",
-            UsuarioModificacion = entrada.Usumod ?? ""
-        };
-    }
+
 }

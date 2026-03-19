@@ -15,6 +15,6 @@ public class ListarPlatosUseCase
     public async Task<IEnumerable<PlatoResponse>> ExecuteAsync(string? nombre, CancellationToken ct)
     {
         var list = await _platoRepository.GetListAsync(nombre, ct);
-        return list?.Select(PlatoResponse.FromEntity) ?? Enumerable.Empty<PlatoResponse>();
+        return list?.Select(MenuSoda.Application.Mappers.AppMappers.Map) ?? Enumerable.Empty<PlatoResponse>();
     }
 }

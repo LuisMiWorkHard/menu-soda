@@ -39,9 +39,9 @@ public class ImagenRepository : IImagenRepository
             "menusoda.sp_ins_imagen",
             new
             {
-                p_imarut = request.Imarut,
-                p_imanom = request.Imanom,
-                p_imaext = request.Imaext,
+                p_imarut = request.Ruta,
+                p_imanom = request.Nombre,
+                p_imaext = request.Extension,
                 p_usureg = currentUser
             },
             ct
@@ -56,10 +56,10 @@ public class ImagenRepository : IImagenRepository
             new
             {
                 p_id = request.Id,
-                p_imarut = request.Imarut,
-                p_imanom = request.Imanom,
-                p_imaext = request.Imaext,
-                p_codest = request.Codest,
+                p_imarut = request.Ruta,
+                p_imanom = request.Nombre,
+                p_imaext = request.Extension,
+                p_codest = request.EstadoId,
                 p_usumod = currentUser
             },
             ct

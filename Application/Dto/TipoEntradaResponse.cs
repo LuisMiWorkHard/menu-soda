@@ -12,17 +12,5 @@ public class TipoEntradaResponse
     public string FechaModificacion { get; set; } = "";
     public string UsuarioModificacion { get; set; } = "";
 
-    public static TipoEntradaResponse FromEntity(TipoEntrada entity)
-    {
-        return new TipoEntradaResponse
-        {
-            Id = entity.Id,
-            Descripcion = entity.Tipentdes,
-            EstadoId = entity.Codest,
-            FechaRegistro = entity.Fecreg,
-            UsuarioRegistro = entity.Usureg,
-            FechaModificacion = entity.Fecmod,
-            UsuarioModificacion = entity.Usumod
-        };
-    }
+
 }

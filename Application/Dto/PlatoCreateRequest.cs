@@ -2,7 +2,7 @@ namespace MenuSoda.Application.Dto;
 
 public class PlatoCreateRequest
 {
-    public string Planom { get; set; } = string.Empty;
-    public string Plades { get; set; } = string.Empty;
-    public int Codtippla { get; set; }
+    public string Nombre { get; set; } = string.Empty;
+    public string Descripcion { get; set; } = string.Empty;
+    public int TipoPlatoId { get; set; }
 }

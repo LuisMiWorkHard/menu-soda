@@ -39,9 +39,9 @@ public class PlatoRepository : IPlatoRepository
             "menusoda.sp_ins_plato",
             new
             {
-                p_planom = request.Planom,
-                p_plades = request.Plades,
-                p_codtippla = request.Codtippla,
+                p_planom = request.Nombre,
+                p_plades = request.Descripcion,
+                p_codtippla = request.TipoPlatoId,
                 p_usureg = currentUser
             },
             ct
@@ -56,10 +56,10 @@ public class PlatoRepository : IPlatoRepository
             new
             {
                 p_id = request.Id,
-                p_planom = request.Planom,
-                p_plades = request.Plades,
-                p_codtippla = request.Codtippla,
-                p_codest = request.Codest,
+                p_planom = request.Nombre,
+                p_plades = request.Descripcion,
+                p_codtippla = request.TipoPlatoId,
+                p_codest = request.EstadoId,
                 p_usumod = currentUser
             },
             ct

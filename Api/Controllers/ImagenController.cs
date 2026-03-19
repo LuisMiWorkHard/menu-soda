@@ -89,9 +89,9 @@ public class ImagenController : ControllerBase
 
         var request = new ImagenCreateRequest
         {
-            Imarut = objectName,
-            Imanom = guid,
-            Imaext = extension
+            Ruta = objectName,
+            Nombre = guid,
+            Extension = extension
         };
 
         var id = await _createUseCase.ExecuteAsync(request, currentUser, ct);

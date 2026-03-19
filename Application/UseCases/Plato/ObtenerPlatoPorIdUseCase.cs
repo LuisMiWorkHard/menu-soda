@@ -17,6 +17,6 @@ public class ObtenerPlatoPorIdUseCase
         var plato = await _platoRepository.GetByIdAsync(id, ct);
         if (plato == null) return null;
 
-        return PlatoResponse.FromEntity(plato);
+        return MenuSoda.Application.Mappers.AppMappers.Map(plato);
     }
 }

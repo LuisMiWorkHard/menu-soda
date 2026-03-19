@@ -17,6 +17,6 @@ public class ObtenerEntradaPorIdUseCase
         var entrada = await _entradaRepository.GetByIdAsync(id, ct);
         if (entrada == null) return null;
 
-        return EntradaResponse.FromEntity(entrada);
+        return MenuSoda.Application.Mappers.AppMappers.Map(entrada);
     }
 }

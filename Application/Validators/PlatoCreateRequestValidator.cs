@@ -7,15 +7,15 @@ public class PlatoCreateRequestValidator : AbstractValidator<PlatoCreateRequest>
 {
     public PlatoCreateRequestValidator()
     {
-        RuleFor(x => x.Planom)
+        RuleFor(x => x.Nombre)
             .NotEmpty().WithMessage("El nombre del plato es obligatorio.")
             .MaximumLength(100).WithMessage("El nombre del plato no puede exceder los 100 caracteres.");
             
-        RuleFor(x => x.Plades)
+        RuleFor(x => x.Descripcion)
             .NotEmpty().WithMessage("La descripción del plato es obligatoria.")
             .MaximumLength(150).WithMessage("La descripción del plato no puede exceder los 150 caracteres.");
 
-        RuleFor(x => x.Codtippla)
+        RuleFor(x => x.TipoPlatoId)
             .GreaterThan(0).WithMessage("El ID del tipo de plato debe ser mayor a 0.");
     }
 }

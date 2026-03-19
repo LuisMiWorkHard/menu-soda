@@ -39,7 +39,7 @@ public class TipoPlatoRepository : ITipoPlatoRepository
             "menusoda.sp_ins_tipo_plato",
             new
             {
-                p_tipplades = request.Tipplades,
+                p_tipplades = request.Descripcion,
                 p_usureg = currentUser
             },
             ct
@@ -54,8 +54,8 @@ public class TipoPlatoRepository : ITipoPlatoRepository
             new
             {
                 p_id = request.Id,
-                p_tipplades = request.Tipplades,
-                p_codest = request.Codest,
+                p_tipplades = request.Descripcion,
+                p_codest = request.EstadoId,
                 p_usumod = currentUser
             },
             ct

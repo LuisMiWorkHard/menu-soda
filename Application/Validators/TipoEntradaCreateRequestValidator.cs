@@ -7,7 +7,7 @@ public class TipoEntradaCreateRequestValidator : AbstractValidator<TipoEntradaCr
 {
     public TipoEntradaCreateRequestValidator()
     {
-        RuleFor(x => x.Tipentdes)
+        RuleFor(x => x.Descripcion)
             .NotEmpty().WithMessage("La descripción es obligatoria.")
             .MaximumLength(100).WithMessage("La descripción no puede exceder los 100 caracteres.");
     }

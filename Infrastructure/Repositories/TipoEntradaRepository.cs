@@ -39,7 +39,7 @@ public class TipoEntradaRepository : ITipoEntradaRepository
             "menusoda.sp_ins_tipo_entrada",
             new
             {
-                p_tipentdes = request.Tipentdes,
+                p_tipentdes = request.Descripcion,
                 p_usureg = currentUser
             },
             ct
@@ -54,8 +54,8 @@ public class TipoEntradaRepository : ITipoEntradaRepository
             new
             {
                 p_id = request.Id,
-                p_tipentdes = request.Tipentdes,
-                p_codest = request.Codest,
+                p_tipentdes = request.Descripcion,
+                p_codest = request.EstadoId,
                 p_usumod = currentUser
             },
             ct

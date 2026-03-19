@@ -15,6 +15,6 @@ public class ListarTiposEntradaUseCase
     public async Task<IEnumerable<TipoEntradaResponse>> ExecuteAsync(string? filter, CancellationToken ct)
     {
         var list = await _repository.GetListAsync(filter, ct);
-        return list?.Select(TipoEntradaResponse.FromEntity) ?? Enumerable.Empty<TipoEntradaResponse>();
+        return list?.Select(MenuSoda.Application.Mappers.AppMappers.Map) ?? Enumerable.Empty<TipoEntradaResponse>();
     }
 }

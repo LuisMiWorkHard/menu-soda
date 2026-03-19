@@ -15,6 +15,6 @@ public class ListarTiposPlatoUseCase
     public async Task<IEnumerable<TipoPlatoResponse>> ExecuteAsync(string? filter, CancellationToken ct)
     {
         var list = await _repository.GetListAsync(filter, ct);
-        return list?.Select(TipoPlatoResponse.FromEntity) ?? Enumerable.Empty<TipoPlatoResponse>();
+        return list?.Select(MenuSoda.Application.Mappers.AppMappers.Map) ?? Enumerable.Empty<TipoPlatoResponse>();
     }
 }

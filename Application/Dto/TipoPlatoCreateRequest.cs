@@ -2,5 +2,5 @@ namespace MenuSoda.Application.Dto;
 
 public class TipoPlatoCreateRequest
 {
-    public string Tipplades { get; set; } = string.Empty;
+    public string Descripcion { get; set; } = string.Empty;
 }

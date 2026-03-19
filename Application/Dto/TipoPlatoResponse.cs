@@ -12,17 +12,5 @@ public class TipoPlatoResponse
     public string FechaModificacion { get; set; } = "";
     public string UsuarioModificacion { get; set; } = "";
 
-    public static TipoPlatoResponse FromEntity(TipoPlato entity)
-    {
-        return new TipoPlatoResponse
-        {
-            Id = entity.Id,
-            Descripcion = entity.Tipplades,
-            EstadoId = entity.Codest,
-            FechaRegistro = entity.Fecreg,
-            UsuarioRegistro = entity.Usureg,
-            FechaModificacion = entity.Fecmod,
-            UsuarioModificacion = entity.Usumod
-        };
-    }
+
 }

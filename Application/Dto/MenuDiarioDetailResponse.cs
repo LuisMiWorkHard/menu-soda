@@ -8,12 +8,12 @@ namespace MenuSoda.Application.Dto;
 public class MenuDiarioDetailResponse
 {
     public int Id { get; set; }
-    public string Mendiafec { get; set; } = string.Empty;
-    public int Codest { get; set; }
-    public string Fecreg { get; set; } = string.Empty;
-    public string Usureg { get; set; } = string.Empty;
-    public string? Fecmod { get; set; }
-    public string? Usumod { get; set; }
+    public string Fecha { get; set; } = string.Empty;
+    public int EstadoId { get; set; }
+    public string FechaRegistro { get; set; } = string.Empty;
+    public string UsuarioRegistro { get; set; } = string.Empty;
+    public string? FechaModificacion { get; set; }
+    public string? UsuarioModificacion { get; set; }
 
     public List<MenuDiarioEntradaResponse> Entradas { get; set; } = new();
     public List<MenuDiarioPlatoWithAdicionalResponse> Platos { get; set; } = new();
