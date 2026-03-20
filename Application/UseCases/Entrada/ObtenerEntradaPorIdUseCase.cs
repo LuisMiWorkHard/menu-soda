@@ -1,5 +1,6 @@
 using MenuSoda.Application.Dto;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
+using MenuSoda.Application.Mappers;
 
 namespace MenuSoda.Application.UseCases.Entrada;
 
@@ -17,6 +18,6 @@ public class ObtenerEntradaPorIdUseCase
         var entrada = await _entradaRepository.GetByIdAsync(id, ct);
         if (entrada == null) return null;
 
-        return MenuSoda.Application.Mappers.AppMappers.Map(entrada);
+        return EntradaMapper.Map(entrada);
     }
 }

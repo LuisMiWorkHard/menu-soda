@@ -1,5 +1,5 @@
 using MenuSoda.Domain.Entities;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
 using MenuSoda.Infrastructure.Persistence;
 using Dapper;
 using System.Data;

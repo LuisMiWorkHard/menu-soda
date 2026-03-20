@@ -1,7 +1,6 @@
 using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Entities;
-using MenuSoda.Domain.Interfaces.Repositories;
-using MenuSoda.Domain.Models.Repositories;
+using MenuSoda.Application.Interfaces;
 using MenuSoda.Infrastructure.Persistence;
 
 namespace MenuSoda.Infrastructure.Repositories;
@@ -35,7 +34,7 @@ public class TipoPlatoRepository : ITipoPlatoRepository
 
     public async Task<int> CreateAsync(TipoPlatoCreateRequest request, string currentUser, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_ins_tipo_plato",
             new
             {
@@ -49,7 +48,7 @@ public class TipoPlatoRepository : ITipoPlatoRepository
 
     public async Task<int> UpdateAsync(TipoPlatoUpdateRequest request, string currentUser, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_upd_tipo_plato",
             new
             {
@@ -65,7 +64,7 @@ public class TipoPlatoRepository : ITipoPlatoRepository
 
     public async Task<int> DeleteAsync(int id, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_del_tipo_plato",
             new { p_id = id },
             ct

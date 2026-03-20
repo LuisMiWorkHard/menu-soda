@@ -1,4 +1,4 @@
-using MenuSoda.Domain.Models.Repositories;
+using MenuSoda.Application.Dto;
 
 namespace MenuSoda.Application.Dto;
 

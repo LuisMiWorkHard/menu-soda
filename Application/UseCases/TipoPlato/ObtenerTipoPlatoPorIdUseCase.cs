@@ -1,5 +1,6 @@
 using MenuSoda.Application.Dto;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
+using MenuSoda.Application.Mappers;
 
 namespace MenuSoda.Application.UseCases.TipoPlato;
 
@@ -17,6 +18,6 @@ public class ObtenerTipoPlatoPorIdUseCase
         var entity = await _repository.GetByIdAsync(id, ct);
         if (entity == null) return null;
 
-        return MenuSoda.Application.Mappers.AppMappers.Map(entity);
+        return TipoPlatoMapper.Map(entity);
     }
 }

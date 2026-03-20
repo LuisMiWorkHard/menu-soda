@@ -1,5 +1,6 @@
 using MenuSoda.Application.Dto;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
+using MenuSoda.Application.Mappers;
 
 namespace MenuSoda.Application.UseCases.Plato;
 
@@ -15,6 +16,6 @@ public class ListarPlatosUseCase
     public async Task<IEnumerable<PlatoResponse>> ExecuteAsync(string? nombre, CancellationToken ct)
     {
         var list = await _platoRepository.GetListAsync(nombre, ct);
-        return list?.Select(MenuSoda.Application.Mappers.AppMappers.Map) ?? Enumerable.Empty<PlatoResponse>();
+        return list?.Select(PlatoMapper.Map) ?? Enumerable.Empty<PlatoResponse>();
     }
 }

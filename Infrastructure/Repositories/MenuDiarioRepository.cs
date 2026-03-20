@@ -1,7 +1,6 @@
 using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Entities;
-using MenuSoda.Domain.Interfaces.Repositories;
-using MenuSoda.Domain.Models.Repositories;
+using MenuSoda.Application.Interfaces;
 using MenuSoda.Infrastructure.Persistence;
 
 namespace MenuSoda.Infrastructure.Repositories;
@@ -17,7 +16,7 @@ public class MenuDiarioRepository : IMenuDiarioRepository
 
     public async Task<int> CreateAsync(MenuDiarioCreateRequest request, string currentUser, CancellationToken ct, System.Data.IDbTransaction? transaction = null)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_ins_menu_diario",
             new { p_mendiafec = request.Fecha, p_usureg = currentUser },
             ct,
@@ -29,7 +28,7 @@ public class MenuDiarioRepository : IMenuDiarioRepository
 
     public async Task<int> UpdateAsync(MenuDiarioUpdateRequest request, string currentUser, CancellationToken ct, System.Data.IDbTransaction? transaction = null)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_upd_menu_diario",
             new { p_id = request.Id, p_mendiafec = request.Mendiafec, p_codest = request.Codest, p_usumod = currentUser },
             ct,
@@ -41,7 +40,7 @@ public class MenuDiarioRepository : IMenuDiarioRepository
 
     public async Task<int> DeleteAsync(int id, CancellationToken ct, System.Data.IDbTransaction? transaction = null)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_del_menu_diario",
             new { p_id = id },
             ct,

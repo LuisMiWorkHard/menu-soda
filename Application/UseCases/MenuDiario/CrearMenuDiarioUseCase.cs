@@ -1,8 +1,9 @@
+using MenuSoda.Domain.Exceptions;
 using MenuSoda.Application.Dto;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
 using MenuSoda.Infrastructure.Middleware;
 using MenuSoda.Infrastructure.Persistence;
-using DomainRepo = MenuSoda.Domain.Models.Repositories;
+using DomainRepo = MenuSoda.Application.Dto;
 
 namespace MenuSoda.Application.UseCases.MenuDiario;
 
@@ -48,26 +49,26 @@ public class CrearMenuDiarioUseCase
         // 1. Validaciones previas
         var imagen = await _imagenRepository.GetByIdAsync(request.ImagenId, ct);
         if (imagen == null || imagen.Codest == 0)
-            throw new GlobalExceptionHandler.CustomBusinessValidationException($"La imagen no existe o no está activa.");
+            throw new CustomBusinessValidationException($"La imagen no existe o no está activa.");
 
         foreach (var entId in request.EntradasIds)
         {
             var ent = await _entradaRepository.GetByIdAsync(entId, ct);
             if (ent == null || ent.Codest == 0)
-                throw new GlobalExceptionHandler.CustomBusinessValidationException($"La entrada no existe o no está activa.");
+                throw new CustomBusinessValidationException($"La entrada no existe o no está activa.");
         }
 
         foreach (var platoItem in request.Platos)
         {
             var pla = await _platoRepository.GetByIdAsync(platoItem.PlatoId, ct);
             if (pla == null || pla.Codest == 0)
-                throw new GlobalExceptionHandler.CustomBusinessValidationException($"El plato no existe o no está activo.");
+                throw new CustomBusinessValidationException($"El plato no existe o no está activo.");
 
             if (platoItem.AdicionalId.HasValue && platoItem.AdicionalId.Value > 0)
             {
                 var adi = await _adicionalRepository.GetByIdAsync(platoItem.AdicionalId.Value, ct);
                 if (adi == null || adi.Codest == 0)
-                    throw new GlobalExceptionHandler.CustomBusinessValidationException($"El adicional no existe o no está activo.");
+                    throw new CustomBusinessValidationException($"El adicional no existe o no está activo.");
             }
         }
 

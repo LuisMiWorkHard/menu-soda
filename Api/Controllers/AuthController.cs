@@ -1,6 +1,6 @@
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Options;
-using MenuSoda.Application.Services;
+using MenuSoda.Application.Utils;
 using MenuSoda.Application.UseCases.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,20 +15,20 @@ public class AuthController : ControllerBase
     private readonly LoginUseCase _loginUseCase;
     private readonly ObtenerRefreshTokenUseCase _refreshUseCase;
     private readonly LogoutUseCase _logoutUseCase;
-    private readonly UtilService _utilService;
+    private readonly ParseUtil _parseUtil;
     private readonly AuthOptions _authOptions;
 
     public AuthController(
         LoginUseCase loginUseCase,
         ObtenerRefreshTokenUseCase refreshUseCase,
         LogoutUseCase logoutUseCase,
-        UtilService utilService,
+        ParseUtil parseUtil,
         IOptions<AuthOptions> authOptions)
     {
         _loginUseCase = loginUseCase;
         _refreshUseCase = refreshUseCase;
         _logoutUseCase = logoutUseCase;
-        _utilService = utilService;
+        _parseUtil = parseUtil;
         _authOptions = authOptions.Value;
     }
 
@@ -40,7 +40,7 @@ public class AuthController : ControllerBase
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
         var deviceId = Request.Headers[_authOptions.DeviceIdHeaderName].ToString() ?? string.Empty;
-        var (lat, lon) = _utilService.ParseGeo(Request.Headers[_authOptions.GeoLatHeaderName].ToString(), Request.Headers[_authOptions.GeoLonHeaderName].ToString());
+        var (lat, lon) = _parseUtil.ParseGeo(Request.Headers[_authOptions.GeoLatHeaderName].ToString(), Request.Headers[_authOptions.GeoLonHeaderName].ToString());
 
         request.IpAddress = ipAddress;
         request.UserAgent = userAgent;
@@ -72,7 +72,7 @@ public class AuthController : ControllerBase
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
         var deviceId = Request.Headers[_authOptions.DeviceIdHeaderName].ToString() ?? string.Empty;
-        var (lat, lon) = _utilService.ParseGeo(Request.Headers[_authOptions.GeoLatHeaderName].ToString(), Request.Headers[_authOptions.GeoLonHeaderName].ToString());
+        var (lat, lon) = _parseUtil.ParseGeo(Request.Headers[_authOptions.GeoLatHeaderName].ToString(), Request.Headers[_authOptions.GeoLonHeaderName].ToString());
 
         var result = await _refreshUseCase.ExecuteAsync(
             new ObtenerRefreshTokenRequest

@@ -1,6 +1,6 @@
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
 using MenuSoda.Infrastructure.Persistence;
-using DomainRepo = MenuSoda.Domain.Models.Repositories;
+using DomainRepo = MenuSoda.Application.Dto;
 
 namespace MenuSoda.Application.UseCases.MenuDiario;
 

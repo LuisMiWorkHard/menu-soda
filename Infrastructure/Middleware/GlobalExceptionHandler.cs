@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using MenuSoda.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -155,11 +156,4 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                                                         : "La solicitud conflicta con el estado actual del recurso.",
         _                                          => "Se produjo un error inesperado en el servidor."
     };
-
-    public sealed class CustomBusinessValidationException : Exception
-    {
-        public CustomBusinessValidationException(string message) : base(message) {}
-        public CustomBusinessValidationException(string message, Exception inner) : base(message, inner) {}
-        
-    }
 }

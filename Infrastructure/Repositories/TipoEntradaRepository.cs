@@ -1,7 +1,7 @@
 using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Entities;
-using MenuSoda.Domain.Interfaces.Repositories;
-using DomainRepo = MenuSoda.Domain.Models.Repositories;
+using MenuSoda.Application.Interfaces;
+using DomainRepo = MenuSoda.Application.Dto;
 using MenuSoda.Infrastructure.Persistence;
 
 namespace MenuSoda.Infrastructure.Repositories;
@@ -35,7 +35,7 @@ public class TipoEntradaRepository : ITipoEntradaRepository
 
     public async Task<int> CreateAsync(TipoEntradaCreateRequest request, string currentUser, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<DomainRepo.OperationIdResult>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<DomainRepo.OperationIdResponse>(
             "menusoda.sp_ins_tipo_entrada",
             new
             {
@@ -49,7 +49,7 @@ public class TipoEntradaRepository : ITipoEntradaRepository
 
     public async Task<int> UpdateAsync(TipoEntradaUpdateRequest request, string currentUser, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<DomainRepo.OperationIdResult>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<DomainRepo.OperationIdResponse>(
             "menusoda.sp_upd_tipo_entrada",
             new
             {
@@ -65,7 +65,7 @@ public class TipoEntradaRepository : ITipoEntradaRepository
 
     public async Task<int> DeleteAsync(int id, CancellationToken ct)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<DomainRepo.OperationIdResult>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<DomainRepo.OperationIdResponse>(
             "menusoda.sp_del_tipo_entrada",
             new { p_id = id },
             ct

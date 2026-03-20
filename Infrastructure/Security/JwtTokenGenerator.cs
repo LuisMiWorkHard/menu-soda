@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using MenuSoda.Domain.Interfaces.Security;
+using MenuSoda.Application.Interfaces.Security;
 using MenuSoda.Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 

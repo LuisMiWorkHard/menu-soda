@@ -1,5 +1,6 @@
 using MenuSoda.Application.Dto;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
+using MenuSoda.Application.Mappers;
 
 namespace MenuSoda.Application.UseCases.TipoEntrada;
 
@@ -15,6 +16,6 @@ public class ListarTiposEntradaUseCase
     public async Task<IEnumerable<TipoEntradaResponse>> ExecuteAsync(string? filter, CancellationToken ct)
     {
         var list = await _repository.GetListAsync(filter, ct);
-        return list?.Select(MenuSoda.Application.Mappers.AppMappers.Map) ?? Enumerable.Empty<TipoEntradaResponse>();
+        return list?.Select(TipoEntradaMapper.Map) ?? Enumerable.Empty<TipoEntradaResponse>();
     }
 }

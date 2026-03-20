@@ -1,7 +1,7 @@
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 using MenuSoda.Domain.Entities;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Mappers;
 
 namespace MenuSoda.Application.UseCases.Imagen;
 
@@ -21,7 +21,7 @@ public class ListarImagenesUseCase
         var entities = await _imagenRepository.GetListAsync(nombre, ct);
         if (entities == null) return Enumerable.Empty<ImagenResponse>();
 
-        return entities.Select(e => MenuSoda.Application.Mappers.ImagenMapper.ToResponse(e, _storageService));
+        return entities.Select(e => ImagenMapper.ToResponse(e, _storageService));
     }
 
 

@@ -1,8 +1,7 @@
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 using MenuSoda.Application.Options;
-using MenuSoda.Domain.Interfaces.Security;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces.Security;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

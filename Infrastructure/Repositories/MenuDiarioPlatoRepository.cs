@@ -1,5 +1,5 @@
-using MenuSoda.Domain.Interfaces.Repositories;
-using MenuSoda.Domain.Models.Repositories;
+using MenuSoda.Application.Interfaces;
+using MenuSoda.Application.Dto;
 using MenuSoda.Infrastructure.Persistence;
 
 namespace MenuSoda.Infrastructure.Repositories;
@@ -15,7 +15,7 @@ public class MenuDiarioPlatoRepository : IMenuDiarioPlatoRepository
 
     public async Task<int> AddAsync(MenuDiarioPlatoInsertRequest request, CancellationToken ct, System.Data.IDbTransaction? transaction = null)
     {
-        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResult>(
+        var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_ins_menu_diario_plato",
             new { p_codmendia = request.Codmendia, p_codpla = request.Codpla, p_usureg = request.Usureg },
             ct,

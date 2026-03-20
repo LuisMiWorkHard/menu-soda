@@ -1,5 +1,5 @@
 using MenuSoda.Domain.Entities;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
 
 namespace MenuSoda.Infrastructure.Repositories;
 

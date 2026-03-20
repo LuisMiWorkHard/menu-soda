@@ -1,5 +1,6 @@
+using MenuSoda.Domain.Exceptions;
 using MenuSoda.Application.Dto;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
 using MenuSoda.Infrastructure.Middleware;
 
 namespace MenuSoda.Application.UseCases.Plato;
@@ -21,7 +22,7 @@ public class CrearPlatoUseCase
         var tipoPlato = await _tipoPlatoRepository.GetByIdAsync(request.TipoPlatoId, ct);
         if (tipoPlato == null || tipoPlato.Codest == 0)
         {
-            throw new MenuSoda.Infrastructure.Middleware.GlobalExceptionHandler.CustomBusinessValidationException($"El tipo de plato seleccionado no existe o no está activo.");
+            throw new CustomBusinessValidationException($"El tipo de plato seleccionado no existe o no está activo.");
         }
 
         return await _platoRepository.CreateAsync(request, currentUser, ct);

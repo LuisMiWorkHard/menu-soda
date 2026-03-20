@@ -1,5 +1,5 @@
 using System.Security.Cryptography;
-using MenuSoda.Domain.Interfaces.Security;
+using MenuSoda.Application.Interfaces.Security;
 
 namespace MenuSoda.Infrastructure.Security;
 

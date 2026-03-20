@@ -1,5 +1,6 @@
+using MenuSoda.Domain.Exceptions;
 using MenuSoda.Application.Dto;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
 
 namespace MenuSoda.Application.UseCases.Entrada;
 
@@ -19,7 +20,7 @@ public class ActualizarEntradaUseCase
         var tipoEntrada = await _tipoEntradaRepository.GetByIdAsync(request.TipoEntradaId, ct);
         if (tipoEntrada == null || tipoEntrada.Codest == 0)
         {
-            throw new MenuSoda.Infrastructure.Middleware.GlobalExceptionHandler.CustomBusinessValidationException($"El tipo de entrada seleccionado no existe o no está activo.");
+            throw new CustomBusinessValidationException($"El tipo de entrada seleccionado no existe o no está activo.");
         }
         
         var id = await _entradaRepository.UpdateAsync(request, currentUser, ct);

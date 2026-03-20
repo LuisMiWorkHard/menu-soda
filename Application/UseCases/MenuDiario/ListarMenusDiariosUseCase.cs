@@ -1,5 +1,5 @@
 using MenuSoda.Application.Dto;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Interfaces;
 
 namespace MenuSoda.Application.UseCases.MenuDiario;
 

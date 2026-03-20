@@ -5,7 +5,6 @@ using Dapper;
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 using MenuSoda.Domain.Entities;
-using MenuSoda.Domain.Models.Security;
 
 public class DapperRefreshTokenService : IRefreshToken
 {

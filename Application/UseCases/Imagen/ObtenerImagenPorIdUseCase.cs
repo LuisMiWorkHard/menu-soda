@@ -1,7 +1,7 @@
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 using MenuSoda.Domain.Entities;
-using MenuSoda.Domain.Interfaces.Repositories;
+using MenuSoda.Application.Mappers;
 
 namespace MenuSoda.Application.UseCases.Imagen;
 
@@ -21,7 +21,7 @@ public class ObtenerImagenPorIdUseCase
         var entity = await _imagenRepository.GetByIdAsync(id, ct);
         if (entity == null) return null;
 
-        return MenuSoda.Application.Mappers.ImagenMapper.ToResponse(entity, _storageService);
+        return ImagenMapper.ToResponse(entity, _storageService);
     }
 
 
