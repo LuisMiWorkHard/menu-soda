@@ -46,11 +46,14 @@ public class MenuDiarioController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] MenuDiarioCreateRequest request, CancellationToken ct)
+    [HttpPost, Consumes("multipart/form-data")]
+    public async Task<IActionResult> Create(
+        [FromForm] MenuDiarioCreateRequest request,
+        [FromForm] IFormFile? imagen,
+        CancellationToken ct)
     {
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-        var id = await _createUseCase.ExecuteAsync(request, currentUser, ct);
+        var id = await _createUseCase.ExecuteAsync(request, imagen, currentUser, ct);
 
         if (id > 0)
             return CreatedAtAction(nameof(GetById), new { id }, new { id });

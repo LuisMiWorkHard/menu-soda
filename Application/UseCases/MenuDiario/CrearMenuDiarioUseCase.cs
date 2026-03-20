@@ -1,9 +1,11 @@
 using MenuSoda.Domain.Exceptions;
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
-using MenuSoda.Infrastructure.Middleware;
+using MenuSoda.Application.Options;
 using MenuSoda.Infrastructure.Persistence;
-using DomainRepo = MenuSoda.Application.Dto;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MenuSoda.Application.UseCases.MenuDiario;
 
@@ -18,7 +20,13 @@ public class CrearMenuDiarioUseCase
     private readonly IPlatoRepository _platoRepository;
     private readonly IImagenRepository _imagenRepository;
     private readonly IAdicionalRepository _adicionalRepository;
+    private readonly IStorageService _storageService;
+    private readonly GcsOptions _gcsOptions;
     private readonly DapperContext _dapperContext;
+    private readonly ILogger<CrearMenuDiarioUseCase> _logger;
+
+    private static readonly HashSet<string> _extensionesPermitidas =
+        new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".webp" };
 
     public CrearMenuDiarioUseCase(
         IMenuDiarioRepository menuDiarioRepository,
@@ -30,6 +38,9 @@ public class CrearMenuDiarioUseCase
         IPlatoRepository platoRepository,
         IImagenRepository imagenRepository,
         IAdicionalRepository adicionalRepository,
+        IStorageService storageService,
+        IOptions<GcsOptions> gcsOptions,
+        ILogger<CrearMenuDiarioUseCase> logger,
         DapperContext dapperContext)
     {
         _menuDiarioRepository = menuDiarioRepository;
@@ -41,16 +52,15 @@ public class CrearMenuDiarioUseCase
         _platoRepository = platoRepository;
         _imagenRepository = imagenRepository;
         _adicionalRepository = adicionalRepository;
+        _storageService = storageService;
+        _gcsOptions = gcsOptions.Value;
+        _logger = logger;
         _dapperContext = dapperContext;
     }
 
-    public async Task<int> ExecuteAsync(MenuDiarioCreateRequest request, string currentUser, CancellationToken ct)
+    public async Task<int> ExecuteAsync(MenuDiarioCreateRequest request, IFormFile? imagen, string currentUser, CancellationToken ct)
     {
-        // 1. Validaciones previas
-        var imagen = await _imagenRepository.GetByIdAsync(request.ImagenId, ct);
-        if (imagen == null || imagen.Codest == 0)
-            throw new CustomBusinessValidationException($"La imagen no existe o no está activa.");
-
+        // 1. Validar entradas y platos existen en DB
         foreach (var entId in request.EntradasIds)
         {
             var ent = await _entradaRepository.GetByIdAsync(entId, ct);
@@ -72,27 +82,66 @@ public class CrearMenuDiarioUseCase
             }
         }
 
-        // 2. Transacción Explícita
+        // 2. Validar imagen si se proporcionó
+        string? objectName = null;
+        string? extension = null;
+        if (imagen != null)
+        {
+            extension = Path.GetExtension(imagen.FileName);
+            if (!_extensionesPermitidas.Contains(extension))
+                throw new CustomBusinessValidationException(
+                    $"La extensión '{extension}' no está permitida. Use: {string.Join(", ", _extensionesPermitidas)}.");
+
+            var maxBytes = (long)_gcsOptions.MaxImageSizeMb * 1024 * 1024;
+            if (imagen.Length > maxBytes)
+                throw new CustomBusinessValidationException(
+                    $"La imagen supera el tamaño máximo permitido de {_gcsOptions.MaxImageSizeMb} MB.");
+
+            // 3. Generar nombre del objeto en GCS
+            objectName = $"images/{Guid.NewGuid()}{extension}";
+
+            // 4. Subir a GCS
+            using var stream = imagen.OpenReadStream();
+            await _storageService.UploadAsync(stream, objectName, imagen.ContentType, ct);
+        }
+
+        // 5. Transacción DB con compensación si falla
         using var connection = _dapperContext.CreateConnection();
         connection.Open();
         using var transaction = connection.BeginTransaction();
 
         try
         {
-            // A. Insertar Header
+            // A. Insertar imagen en DB si se subió a GCS
+            int? imagenId = null;
+            if (objectName != null)
+            {
+                imagenId = await _imagenRepository.CreateAsync(new ImagenCreateRequest
+                {
+                    Ruta = objectName,
+                    Nombre = Path.GetFileNameWithoutExtension(imagen!.FileName),
+                    Extension = extension!
+                }, currentUser, ct, transaction);
+            }
+
+            // B. Insertar header del menú
             var menuId = await _menuDiarioRepository.CreateAsync(request, currentUser, ct, transaction);
 
-            // B. Insertar Detalles
-            await _menuDiarioImagenRepository.AddAsync(new DomainRepo.MenuDiarioImagenInsertRequest
+            // C. Insertar relación menu-imagen
+            if (imagenId.HasValue)
             {
-                Codmendia = menuId,
-                Codima = request.ImagenId,
-                Usureg = currentUser
-            }, ct, transaction);
+                await _menuDiarioImagenRepository.AddAsync(new MenuDiarioImagenInsertRequest
+                {
+                    Codmendia = menuId,
+                    Codima = imagenId.Value,
+                    Usureg = currentUser
+                }, ct, transaction);
+            }
 
+            // D. Insertar entradas
             foreach (var entId in request.EntradasIds)
             {
-                await _menuDiarioEntradaRepository.AddAsync(new DomainRepo.MenuDiarioEntradaInsertRequest
+                await _menuDiarioEntradaRepository.AddAsync(new MenuDiarioEntradaInsertRequest
                 {
                     Codmendia = menuId,
                     Codent = entId,
@@ -100,9 +149,10 @@ public class CrearMenuDiarioUseCase
                 }, ct, transaction);
             }
 
+            // E. Insertar platos y adicionales
             foreach (var platoItem in request.Platos)
             {
-                var idPlatoGenerado = await _menuDiarioPlatoRepository.AddAsync(new DomainRepo.MenuDiarioPlatoInsertRequest
+                var idPlatoGenerado = await _menuDiarioPlatoRepository.AddAsync(new MenuDiarioPlatoInsertRequest
                 {
                     Codmendia = menuId,
                     Codpla = platoItem.PlatoId,
@@ -111,7 +161,7 @@ public class CrearMenuDiarioUseCase
 
                 if (platoItem.AdicionalId.HasValue && platoItem.AdicionalId.Value > 0)
                 {
-                    await _menuDiarioPlatoAdicionalRepository.AddAsync(new DomainRepo.MenuDiarioPlatoAdicionalInsertRequest
+                    await _menuDiarioPlatoAdicionalRepository.AddAsync(new MenuDiarioPlatoAdicionalInsertRequest
                     {
                         Codmendiapla = idPlatoGenerado,
                         Codadi = platoItem.AdicionalId.Value,
@@ -126,6 +176,19 @@ public class CrearMenuDiarioUseCase
         catch
         {
             transaction.Rollback();
+
+            // Compensación: eliminar objeto de GCS si ya fue subido
+            if (objectName != null)
+            {
+                try { await _storageService.DeleteAsync(objectName, ct); }
+                catch (Exception exGcs)
+                {
+                    _logger.LogError(exGcs,
+                        "No fue posible eliminar la imagen del repositorio GCS. ObjectName: {ObjectName}",
+                        objectName);
+                }
+            }
+
             throw;
         }
     }

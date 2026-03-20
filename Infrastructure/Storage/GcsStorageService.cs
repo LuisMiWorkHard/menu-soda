@@ -32,7 +32,8 @@ public class GcsStorageService : IStorageService
             var credential = GoogleCredential.GetApplicationDefault();
             serviceAccountCredential = credential.UnderlyingCredential as ServiceAccountCredential
                 ?? throw new InvalidOperationException(
-                    "La credencial GCS debe ser una Service Account para generar signed URLs.");
+                    "Error al obtener las credenciales GCS. Asegúrate de que la variable esté configurada correctamente.",
+                    new Exception("La credencial GCS debe ser una Service Account para generar signed URLs."));
         }
 
         _storageClient = StorageClient.Create(serviceAccountCredential.ToGoogleCredential());
@@ -50,6 +51,11 @@ public class GcsStorageService : IStorageService
             cancellationToken: ct);
 
         return objectName;
+    }
+
+    public async Task DeleteAsync(string objectName, CancellationToken ct)
+    {
+        await _storageClient.DeleteObjectAsync(_bucketName, objectName, cancellationToken: ct);
     }
 
     public string GetSignedUrl(string objectName)

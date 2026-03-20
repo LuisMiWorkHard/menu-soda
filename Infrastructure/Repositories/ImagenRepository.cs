@@ -1,3 +1,4 @@
+using System.Data;
 using MenuSoda.Application.Dto;
 using MenuSoda.Domain.Entities;
 using MenuSoda.Application.Interfaces;
@@ -32,7 +33,7 @@ public class ImagenRepository : IImagenRepository
         );
     }
 
-    public async Task<int> CreateAsync(ImagenCreateRequest request, string currentUser, CancellationToken ct)
+    public async Task<int> CreateAsync(ImagenCreateRequest request, string currentUser, CancellationToken ct, IDbTransaction? transaction = null)
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_ins_imagen",
@@ -43,7 +44,9 @@ public class ImagenRepository : IImagenRepository
                 p_imaext = request.Extension,
                 p_usureg = currentUser
             },
-            ct
+            ct,
+            "result_cur",
+            (Npgsql.NpgsqlTransaction?)transaction
         );
         return result?.Id ?? 0;
     }
