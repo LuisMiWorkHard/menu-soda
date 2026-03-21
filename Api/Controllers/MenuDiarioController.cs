@@ -61,13 +61,13 @@ public class MenuDiarioController : ControllerBase
         return BadRequest();
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] MenuDiarioUpdateRequest request, CancellationToken ct)
+    [HttpPut("{id}"), Consumes("multipart/form-data")]
+    public async Task<IActionResult> Update(int id, [FromForm] MenuDiarioUpdateRequest request, IFormFile? imagen, CancellationToken ct)
     {
         if (id != request.Id) return BadRequest("El ID de la URL no coincide con el cuerpo de la solicitud.");
 
         var currentUser = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
-        var success = await _updateUseCase.ExecuteAsync(request, currentUser, ct);
+        var success = await _updateUseCase.ExecuteAsync(request, imagen, currentUser, ct);
 
         if (!success) return NotFound();
 
