@@ -2,7 +2,7 @@ namespace MenuSoda.Application.Dto;
 
 public class MenuDiarioImagenInsertRequest
 {
-    public int Codmendia { get; set; }
-    public int Codima { get; set; }
-    public string Usureg { get; set; } = string.Empty;
+    public int MenuDiarioId { get; set; }
+    public int ImagenId { get; set; }
+    public string UsuarioRegistro { get; set; } = string.Empty;
 }

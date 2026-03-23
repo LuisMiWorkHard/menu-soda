@@ -6,10 +6,10 @@ namespace MenuSoda.Application.Dto;
 public class MenuDiarioEntradaResponse
 {
     public int Id { get; set; }
-    public int Codent { get; set; }
-    public string Entdes { get; set; } = string.Empty;
-    public string? Entdeslar { get; set; }
-    public int Codtipent { get; set; }
-    public string Tipentdes { get; set; } = string.Empty;
-    public int Codest { get; set; }
+    public int EntradaId { get; set; }
+    public string EntradaNombre { get; set; } = string.Empty;
+    public string? EntradaDescripcion { get; set; }
+    public int TipoEntradaId { get; set; }
+    public string TipoEntradaDescripcion { get; set; } = string.Empty;
+    public int EstadoId { get; set; }
 }

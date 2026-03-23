@@ -6,9 +6,9 @@ namespace MenuSoda.Application.Dto;
 public class MenuDiarioImagenResponse
 {
     public int Id { get; set; }
-    public int Codima { get; set; }
-    public string Imarut { get; set; } = string.Empty;
-    public string Imanom { get; set; } = string.Empty;
-    public string Imaext { get; set; } = string.Empty;
-    public int Codest { get; set; }
+    public int ImagenId { get; set; }
+    public string Ruta { get; set; } = string.Empty;
+    public string Nombre { get; set; } = string.Empty;
+    public string Extension { get; set; } = string.Empty;
+    public int EstadoId { get; set; }
 }

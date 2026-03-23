@@ -17,7 +17,7 @@ public class MenuDiarioPlatoAdicionalRepository : IMenuDiarioPlatoAdicionalRepos
     {
         await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_ins_menu_diario_plato_adicional",
-            new { p_codmendiapla = request.Codmendiapla, p_codadi = request.Codadi, p_usureg = request.Usureg },
+            new { p_codmendiapla = request.MenuDiarioPlatoId, p_codadi = request.AdicionalId, p_usureg = request.UsuarioRegistro },
             ct,
             "result_cur",
             (Npgsql.NpgsqlTransaction?)transaction
@@ -38,7 +38,7 @@ public class MenuDiarioPlatoAdicionalRepository : IMenuDiarioPlatoAdicionalRepos
     {
         return await _genericRepository.GetListByProcedureAsync<MenuDiarioPlatoAdicionalResponse>(
             "menusoda.sp_list_menu_diario_plato_adicional_by_menu",
-            new { p_codmendia = request.Codmendia },
+            new { p_codmendia = request.MenuDiarioId },
             ct
         ) ?? Enumerable.Empty<MenuDiarioPlatoAdicionalResponse>();
     }

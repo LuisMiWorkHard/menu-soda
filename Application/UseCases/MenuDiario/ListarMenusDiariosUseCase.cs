@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.Json;
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 
@@ -24,13 +26,13 @@ public class ListarMenusDiariosUseCase
             string? fecModStr = item.Fecmod ?? item.Fecreg;
 
             DateTime fechaVal;
-            DateTime.TryParseExact(fechaStr, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out fechaVal);
+            DateTime.TryParseExact(fechaStr, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out fechaVal);
 
             DateTime? fecModVal = null;
             if (!string.IsNullOrEmpty(fecModStr))
             {
                 DateTime tmp;
-                if (DateTime.TryParseExact(fecModStr, "dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out tmp))
+                if (DateTime.TryParseExact(fecModStr, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out tmp))
                 {
                     fecModVal = tmp;
                 }
@@ -42,7 +44,7 @@ public class ListarMenusDiariosUseCase
                 string json = item.Platos_por_tipo;
                 try
                 {
-                    platosList = System.Text.Json.JsonSerializer.Deserialize<List<TipoPlatoCount>>(json)
+                    platosList = JsonSerializer.Deserialize<List<TipoPlatoCount>>(json)
                                 ?? new List<TipoPlatoCount>();
                 }
                 catch { /* Ignorar error de parseo */ }
@@ -51,12 +53,12 @@ public class ListarMenusDiariosUseCase
             response.Add(new MenuDiarioListItemResponse
             {
                 Id = item.Id,
-                Mendiafec = fechaStr,
-                Codest = item.Codest,
-                NombreFecha = GetFriendlyDateName(fechaVal),
+                Fecha = fechaStr,
+                EstadoId = item.Codest,
+                DescripcionFecha = GetFriendlyDateName(fechaVal),
                 TiempoTranscurrido = GetTimeElapsed(fecModVal),
                 CantidadEntradas = item.Cantidad_entradas ?? 0,
-                CantidadPlatosPorTipo = platosList
+                CantidadPlatos = platosList
             });
         }
 
@@ -70,7 +72,7 @@ public class ListarMenusDiariosUseCase
         if (date.Date == today.AddDays(-1)) return "Ayer";
         if (date.Date == today.AddDays(1)) return "Mañana";
 
-        var cal = System.Globalization.CultureInfo.CurrentCulture.Calendar;
+        var cal = CultureInfo.CurrentCulture.Calendar;
         var d1 = today.Date.AddDays(-1 * (int)cal.GetDayOfWeek(today));
         var d2 = date.Date.AddDays(-1 * (int)cal.GetDayOfWeek(date));
         if (d1 == d2) return date.ToString("dddd");

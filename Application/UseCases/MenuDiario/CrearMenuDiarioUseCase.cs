@@ -3,8 +3,6 @@ using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 using MenuSoda.Application.Options;
 using MenuSoda.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace MenuSoda.Application.UseCases.MenuDiario;
@@ -132,9 +130,9 @@ public class CrearMenuDiarioUseCase
             {
                 await _menuDiarioImagenRepository.AddAsync(new MenuDiarioImagenInsertRequest
                 {
-                    Codmendia = menuId,
-                    Codima = imagenId.Value,
-                    Usureg = currentUser
+                    MenuDiarioId = menuId,
+                    ImagenId = imagenId.Value,
+                    UsuarioRegistro = currentUser
                 }, ct, transaction);
             }
 
@@ -143,9 +141,9 @@ public class CrearMenuDiarioUseCase
             {
                 await _menuDiarioEntradaRepository.AddAsync(new MenuDiarioEntradaInsertRequest
                 {
-                    Codmendia = menuId,
-                    Codent = entId,
-                    Usureg = currentUser
+                    MenuDiarioId = menuId,
+                    EntradaId = entId,
+                    UsuarioRegistro = currentUser
                 }, ct, transaction);
             }
 
@@ -163,9 +161,9 @@ public class CrearMenuDiarioUseCase
                 {
                     await _menuDiarioPlatoAdicionalRepository.AddAsync(new MenuDiarioPlatoAdicionalInsertRequest
                     {
-                        Codmendiapla = idPlatoGenerado,
-                        Codadi = platoItem.AdicionalId.Value,
-                        Usureg = currentUser
+                        MenuDiarioPlatoId = idPlatoGenerado,
+                        AdicionalId = platoItem.AdicionalId.Value,
+                        UsuarioRegistro = currentUser
                     }, ct, transaction);
                 }
             }

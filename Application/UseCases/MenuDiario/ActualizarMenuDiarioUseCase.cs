@@ -3,10 +3,7 @@ using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 using MenuSoda.Application.Options;
 using MenuSoda.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using DomainRepo = MenuSoda.Application.Dto;
 
 namespace MenuSoda.Application.UseCases.MenuDiario;
 
@@ -63,7 +60,7 @@ public class ActualizarMenuDiarioUseCase
     {
         // 1. Validar existencia Header
         var currentMenu = await _menuDiarioRepository.GetByIdAsync(request.Id, ct);
-        if (currentMenu == null || currentMenu.Codest == 0)
+        if (currentMenu == null || currentMenu.EstadoId == 0)
             throw new CustomBusinessValidationException($"El menú no existe.");
 
         // 2. Validar imagen si se proporcionó; de lo contrario validar ImagenId existente
@@ -145,42 +142,42 @@ public class ActualizarMenuDiarioUseCase
                 imagenId = request.ImagenId;
             }
 
-            await _menuDiarioImagenRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioImagenDeleteRequest
+            await _menuDiarioImagenRepository.DeleteByMenuLogicalAsync(new MenuDiarioImagenDeleteRequest
             {
                 Codmendia = request.Id,
                 Usumod = currentUser
             }, ct, transaction);
-            await _menuDiarioImagenRepository.AddAsync(new DomainRepo.MenuDiarioImagenInsertRequest
+            await _menuDiarioImagenRepository.AddAsync(new MenuDiarioImagenInsertRequest
             {
-                Codmendia = request.Id,
-                Codima = imagenId!.Value,
-                Usureg = currentUser
+                MenuDiarioId = request.Id,
+                ImagenId = imagenId!.Value,
+                UsuarioRegistro = currentUser
             }, ct, transaction);
 
             // Entradas
-            await _menuDiarioEntradaRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioEntradaDeleteRequest
+            await _menuDiarioEntradaRepository.DeleteByMenuLogicalAsync(new MenuDiarioEntradaDeleteRequest
             {
                 Codmendia = request.Id,
                 Usumod = currentUser
             }, ct, transaction);
             foreach (var entId in request.EntradasIds)
             {
-                await _menuDiarioEntradaRepository.AddAsync(new DomainRepo.MenuDiarioEntradaInsertRequest
+                await _menuDiarioEntradaRepository.AddAsync(new MenuDiarioEntradaInsertRequest
                 {
-                    Codmendia = request.Id,
-                    Codent = entId,
-                    Usureg = currentUser
+                    MenuDiarioId = request.Id,
+                    EntradaId = entId,
+                    UsuarioRegistro = currentUser
                 }, ct, transaction);
             }
 
             // Platos - Cascade Delete: Primero Adicionales, luego Platos
-            await _menuDiarioPlatoAdicionalRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioPlatoAdicionalDeleteRequest
+            await _menuDiarioPlatoAdicionalRepository.DeleteByMenuLogicalAsync(new MenuDiarioPlatoAdicionalDeleteRequest
             {
                 Codmendia = request.Id,
                 Usumod = currentUser
             }, ct, transaction);
 
-            await _menuDiarioPlatoRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioPlatoDeleteRequest
+            await _menuDiarioPlatoRepository.DeleteByMenuLogicalAsync(new MenuDiarioPlatoDeleteRequest
             {
                 Codmendia = request.Id,
                 Usumod = currentUser
@@ -189,7 +186,7 @@ public class ActualizarMenuDiarioUseCase
             // Re-insertar Platos + Adicionales
             foreach (var platoItem in request.Platos)
             {
-                var idPlatoGenerado = await _menuDiarioPlatoRepository.AddAsync(new DomainRepo.MenuDiarioPlatoInsertRequest
+                var idPlatoGenerado = await _menuDiarioPlatoRepository.AddAsync(new MenuDiarioPlatoInsertRequest
                 {
                     Codmendia = request.Id,
                     Codpla = platoItem.PlatoId,
@@ -198,11 +195,11 @@ public class ActualizarMenuDiarioUseCase
 
                 if (platoItem.AdicionalId.HasValue && platoItem.AdicionalId.Value > 0)
                 {
-                    await _menuDiarioPlatoAdicionalRepository.AddAsync(new DomainRepo.MenuDiarioPlatoAdicionalInsertRequest
+                    await _menuDiarioPlatoAdicionalRepository.AddAsync(new MenuDiarioPlatoAdicionalInsertRequest
                     {
-                        Codmendiapla = idPlatoGenerado,
-                        Codadi = platoItem.AdicionalId.Value,
-                        Usureg = currentUser
+                        MenuDiarioPlatoId = idPlatoGenerado,
+                        AdicionalId = platoItem.AdicionalId.Value,
+                        UsuarioRegistro = currentUser
                     }, ct, transaction);
                 }
             }

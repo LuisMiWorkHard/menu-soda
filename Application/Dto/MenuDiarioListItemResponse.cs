@@ -3,12 +3,12 @@ namespace MenuSoda.Application.Dto;
 public class MenuDiarioListItemResponse
 {
     public int Id { get; set; }
-    public string Mendiafec { get; set; } = string.Empty;
-    public string NombreFecha { get; set; } = string.Empty; // Hoy, Ayer, Lunes 20...
-    public int Codest { get; set; }
+    public string Fecha { get; set; } = string.Empty;
+    public string DescripcionFecha { get; set; } = string.Empty; // Hoy, Ayer, Lunes 20...
+    public int EstadoId { get; set; }
     
     public int CantidadEntradas { get; set; }
-    public List<TipoPlatoCount> CantidadPlatosPorTipo { get; set; } = new();
+    public List<TipoPlatoCount> CantidadPlatos { get; set; } = new();
     
     public string TiempoTranscurrido { get; set; } = string.Empty; // Hace x min...
 }

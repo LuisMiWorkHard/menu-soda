@@ -39,7 +39,7 @@ public class MenuDiarioPlatoRepository : IMenuDiarioPlatoRepository
     {
         return await _genericRepository.GetListByProcedureAsync<MenuDiarioPlatoResponse>(
             "menusoda.sp_list_menu_diario_plato_by_menu",
-            new { p_codmendia = request.Codmendia },
+            new { p_codmendia = request.MenuDiarioId },
             ct
         ) ?? Enumerable.Empty<MenuDiarioPlatoResponse>();
     }

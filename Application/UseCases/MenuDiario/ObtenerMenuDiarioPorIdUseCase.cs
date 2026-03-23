@@ -31,7 +31,7 @@ public class ObtenerMenuDiarioPorIdUseCase
         var header = await _menuDiarioRepository.GetByIdAsync(id, ct);
         if (header == null) return null;
 
-        var requestDetail = new DomainRepo.MenuDiarioGetDetailByMenuRequest { Codmendia = id };
+        var requestDetail = new DomainRepo.MenuDiarioGetDetailByMenuRequest { MenuDiarioId = id };
 
         var entradas = await _menuDiarioEntradaRepository.GetByMenuAsync(requestDetail, ct);
         var platos = await _menuDiarioPlatoRepository.GetByMenuAsync(requestDetail, ct);
@@ -44,17 +44,17 @@ public class ObtenerMenuDiarioPorIdUseCase
         {
             foreach (var p in platos)
             {
-                var adicional = adicionales?.FirstOrDefault(a => a.Codmendiapla == p.Id);
+                var adicional = adicionales?.FirstOrDefault(a => a.MenuDiarioPlatoId == p.Id);
 
                 platosList.Add(new MenuDiarioPlatoWithAdicionalResponse
                 {
                     Id = p.Id,
-                    Codpla = p.Codpla,
-                    Planom = p.Planom,
-                    Plades = p.Plades,
-                    Codtippla = p.Codtippla,
-                    Tipplades = p.Tipplades,
-                    Codest = p.Codest,
+                    PlatoId = p.PlatoId,
+                    PlatoNombre = p.Nombre,
+                    PlatoDescripcion = p.Descripcion,
+                    TipoPlatoId = p.TipoPlatoId,
+                    TipoPlatoDescripcion = p.TipoPlatoDescripcion,
+                    EstadoId = p.EstadoId,
                     Adicional = adicional
                 });
             }
@@ -63,12 +63,12 @@ public class ObtenerMenuDiarioPorIdUseCase
         return new MenuDiarioDetailResponse
         {
             Id = header.Id,
-            Fecha = header.Mendiafec,
-            EstadoId = header.Codest,
-            FechaRegistro = header.Fecreg,
-            UsuarioRegistro = header.Usureg,
-            FechaModificacion = header.Fecmod,
-            UsuarioModificacion = header.Usumod,
+            Fecha = header.Fecha,
+            EstadoId = header.EstadoId,
+            FechaRegistro = header.FechaRegistro,
+            UsuarioRegistro = header.UsuarioRegistro,
+            FechaModificacion = header.FechaModificacion,
+            UsuarioModificacion = header.UsuarioModificacion,
             Entradas = entradas.ToList(),
             Platos = platosList,
             Imagen = imagen

@@ -26,11 +26,11 @@ public class MenuDiarioDetailResponse
 public class MenuDiarioPlatoWithAdicionalResponse
 {
     public int Id { get; set; }
-    public int Codpla { get; set; }
-    public string Planom { get; set; } = string.Empty;
-    public string? Plades { get; set; }
-    public int Codtippla { get; set; }
-    public string Tipplades { get; set; } = string.Empty;
-    public int Codest { get; set; }
+    public int PlatoId { get; set; }
+    public string PlatoNombre { get; set; } = string.Empty;
+    public string? PlatoDescripcion { get; set; }
+    public int TipoPlatoId { get; set; }
+    public string TipoPlatoDescripcion { get; set; } = string.Empty;
+    public int EstadoId { get; set; }
     public MenuDiarioPlatoAdicionalResponse? Adicional { get; set; }
 }

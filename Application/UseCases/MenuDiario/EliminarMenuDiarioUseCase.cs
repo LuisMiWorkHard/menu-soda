@@ -1,6 +1,6 @@
+using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 using MenuSoda.Infrastructure.Persistence;
-using DomainRepo = MenuSoda.Application.Dto;
 
 namespace MenuSoda.Application.UseCases.MenuDiario;
 
@@ -37,19 +37,19 @@ public class EliminarMenuDiarioUseCase
             await _menuDiarioRepository.DeleteAsync(id, ct, transaction);
 
             // Borrado lógico en cascada con Auditoría
-            await _menuDiarioEntradaRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioEntradaDeleteRequest
+            await _menuDiarioEntradaRepository.DeleteByMenuLogicalAsync(new MenuDiarioEntradaDeleteRequest
             {
                 Codmendia = id,
                 Usumod = currentUser
             }, ct, transaction);
 
-            await _menuDiarioPlatoRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioPlatoDeleteRequest
+            await _menuDiarioPlatoRepository.DeleteByMenuLogicalAsync(new MenuDiarioPlatoDeleteRequest
             {
                 Codmendia = id,
                 Usumod = currentUser
             }, ct, transaction);
 
-            await _menuDiarioImagenRepository.DeleteByMenuLogicalAsync(new DomainRepo.MenuDiarioImagenDeleteRequest
+            await _menuDiarioImagenRepository.DeleteByMenuLogicalAsync(new MenuDiarioImagenDeleteRequest
             {
                 Codmendia = id,
                 Usumod = currentUser

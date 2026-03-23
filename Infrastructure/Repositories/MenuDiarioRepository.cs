@@ -30,7 +30,7 @@ public class MenuDiarioRepository : IMenuDiarioRepository
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_upd_menu_diario",
-            new { p_id = request.Id, p_mendiafec = request.Mendiafec, p_codest = request.Codest, p_usumod = currentUser },
+            new { p_id = request.Id, p_mendiafec = request.Fecha, p_codest = request.EstadoId, p_usumod = currentUser },
             ct,
             "result_cur",
             (Npgsql.NpgsqlTransaction?)transaction

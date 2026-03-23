@@ -6,9 +6,9 @@ namespace MenuSoda.Application.Dto;
 public class MenuDiarioPlatoAdicionalResponse
 {
     public int Id { get; set; }
-    public int Codmendiapla { get; set; }
-    public int Codadi { get; set; }
-    public string Adinom { get; set; } = string.Empty;
-    public string? Adides { get; set; }
-    public int Codest { get; set; }
+    public int MenuDiarioPlatoId { get; set; }
+    public int AdicionalId { get; set; }
+    public string Nombre { get; set; } = string.Empty;
+    public string? Descripcion { get; set; }
+    public int EstadoId { get; set; }
 }

@@ -17,7 +17,7 @@ public class MenuDiarioImagenRepository : IMenuDiarioImagenRepository
     {
         await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_ins_menu_diario_imagen",
-            new { p_codmendia = request.Codmendia, p_codima = request.Codima, p_usureg = request.Usureg },
+            new { p_codmendia = request.MenuDiarioId, p_codima = request.ImagenId, p_usureg = request.UsuarioRegistro },
             ct,
             "result_cur",
             (Npgsql.NpgsqlTransaction?)transaction
@@ -38,7 +38,7 @@ public class MenuDiarioImagenRepository : IMenuDiarioImagenRepository
     {
         return await _genericRepository.GetSingleByProcedureAsync<MenuDiarioImagenResponse>(
             "menusoda.sp_get_menu_diario_imagen_by_menu",
-            new { p_codmendia = request.Codmendia },
+            new { p_codmendia = request.MenuDiarioId },
             ct
         );
     }
