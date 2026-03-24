@@ -9,7 +9,7 @@ public class EntradaResponse
     public string DescripcionLarga { get; set; } = "";
     public int EstadoId { get; set; }
     public int TipoEntradaId { get; set; }
-    public int ImagenId { get; set; }
+    public int? ImagenId { get; set; }
     public string FechaRegistro { get; set; } = "";
     public string UsuarioRegistro { get; set; } = "";
     public string FechaModificacion { get; set; } = "";

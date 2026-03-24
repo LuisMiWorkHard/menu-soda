@@ -23,7 +23,8 @@ namespace MenuSoda.Application.Validators
                 .GreaterThan(0).WithMessage("El tipo de entrada debe ser un número entero válido.");
 
             RuleFor(x => x.ImagenId)
-                .GreaterThan(0).WithMessage("El código de imagen debe ser un número válido.");
+                .GreaterThan(0).WithMessage("El código de imagen debe ser un número válido.")
+                .When(x => x.ImagenId.HasValue);
         }
     }
 }
