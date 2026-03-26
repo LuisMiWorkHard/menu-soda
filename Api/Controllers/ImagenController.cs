@@ -21,6 +21,7 @@ public class ImagenController : ControllerBase
     private readonly EliminarImagenUseCase _deleteUseCase;
     private readonly IStorageService _storageService;
     private readonly GcsOptions _gcsOptions;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     public ImagenController(
         ObtenerImagenPorIdUseCase getByIdUseCase,
@@ -29,7 +30,8 @@ public class ImagenController : ControllerBase
         ActualizarImagenUseCase updateUseCase,
         EliminarImagenUseCase deleteUseCase,
         IStorageService storageService,
-        IOptions<GcsOptions> gcsOptions)
+        IOptions<GcsOptions> gcsOptions,
+        IHttpClientFactory httpClientFactory)
     {
         _getByIdUseCase = getByIdUseCase;
         _getListUseCase = getListUseCase;
@@ -38,6 +40,7 @@ public class ImagenController : ControllerBase
         _deleteUseCase = deleteUseCase;
         _storageService = storageService;
         _gcsOptions = gcsOptions.Value;
+        _httpClientFactory = httpClientFactory;
     }
 
     [HttpGet("{id}")]
@@ -53,7 +56,20 @@ public class ImagenController : ControllerBase
     {
         var result = await _getByIdUseCase.ExecuteAsync(id, ct);
         if (result == null) return NotFound();
-        return Redirect(result.Ruta);
+
+        var httpClient = _httpClientFactory.CreateClient();
+        var gcsResponse = await httpClient.GetAsync(result.Ruta, ct);
+        if (!gcsResponse.IsSuccessStatusCode) return NotFound();
+
+        var contentType = result.Extension?.ToLower() switch
+        {
+            ".png"  => "image/png",
+            ".webp" => "image/webp",
+            _       => "image/jpeg"
+        };
+
+        var stream = await gcsResponse.Content.ReadAsStreamAsync(ct);
+        return File(stream, contentType);
     }
 
     [HttpGet]

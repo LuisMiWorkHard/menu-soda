@@ -127,6 +127,7 @@ builder.Services.AddScoped<EliminarMenuDiarioUseCase>();
 builder.Services.AddScoped<ObtenerMenuDiarioPorIdUseCase>();
 builder.Services.AddScoped<ListarMenusDiariosUseCase>();
 
+builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
