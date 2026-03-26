@@ -48,6 +48,14 @@ public class ImagenController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{id}/contenido")]
+    public async Task<IActionResult> GetContenido(int id, CancellationToken ct)
+    {
+        var result = await _getByIdUseCase.ExecuteAsync(id, ct);
+        if (result == null) return NotFound();
+        return Redirect(result.Ruta);
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetList([FromQuery] string? nombre, CancellationToken ct)
     {
