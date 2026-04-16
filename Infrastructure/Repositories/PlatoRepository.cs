@@ -40,7 +40,9 @@ public class PlatoRepository : IPlatoRepository
             {
                 p_planom = request.Nombre,
                 p_plades = request.Descripcion,
+                p_pladeslar = request.DescripcionLarga,
                 p_codtippla = request.TipoPlatoId,
+                p_codima = request.ImagenId,
                 p_usureg = currentUser
             },
             ct
@@ -57,8 +59,10 @@ public class PlatoRepository : IPlatoRepository
                 p_id = request.Id,
                 p_planom = request.Nombre,
                 p_plades = request.Descripcion,
+                p_pladeslar = request.DescripcionLarga,
                 p_codtippla = request.TipoPlatoId,
                 p_codest = request.EstadoId,
+                p_codima = request.ImagenId,
                 p_usumod = currentUser
             },
             ct

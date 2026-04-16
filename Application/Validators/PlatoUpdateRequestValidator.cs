@@ -23,5 +23,11 @@ public class PlatoUpdateRequestValidator : AbstractValidator<PlatoUpdateRequest>
 
         RuleFor(x => x.EstadoId)
             .InclusiveBetween(0, 1).WithMessage("El estado debe ser 0 (inactivo) o 1 (activo).");
+
+        RuleFor(x => x.DescripcionLarga)
+            .MaximumLength(500).WithMessage("La descripción larga no puede exceder los 500 caracteres.");
+
+        RuleFor(x => x.ImagenId)
+            .GreaterThan(0).WithMessage("El ID de imagen debe ser mayor a 0.");
     }
 }

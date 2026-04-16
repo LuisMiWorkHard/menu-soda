@@ -9,6 +9,8 @@ public class Plato
     public int Codtippla { get; set; }
     public string Fecreg { get; set; } = "";
     public string Usureg { get; set; } = "";
+    public string? Pladeslar { get; set; }
+    public int? Codima { get; set; }
     public string? Fecmod { get; set; }
     public string? Usumod { get; set; }
 }
