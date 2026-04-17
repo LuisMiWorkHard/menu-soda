@@ -7,8 +7,8 @@ namespace MenuSoda.Application.Mappers;
 [Mapper]
 public static partial class EntradaMapper
 {
+    [MapProperty("Entnom", "Nombre")]
     [MapProperty("Entdes", "Descripcion")]
-    [MapProperty("Entdeslar", "DescripcionLarga")]
     [MapProperty("Codest", "EstadoId")]
     [MapProperty("Codtipent", "TipoEntradaId")]
     [MapProperty("Codima", "ImagenId")]

@@ -7,12 +7,9 @@ public class Plato
     public string Plades { get; set; } = "";
     public int Codest { get; set; }
     public int Codtippla { get; set; }
+    public int? Codima { get; set; }
     public string Fecreg { get; set; } = "";
     public string Usureg { get; set; } = "";
-    public string? Pladeslar { get; set; }
-    public int? Codima { get; set; }
     public string? Fecmod { get; set; }
     public string? Usumod { get; set; }
-    public string? Pladeslar { get; set; }
-    public int? Codima { get; set; }
 }

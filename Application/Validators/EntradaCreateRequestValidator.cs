@@ -9,14 +9,14 @@ namespace MenuSoda.Application.Validators
         public EntradaCreateRequestValidator()
         {
 
-            RuleFor(x => x.Descripcion)
-                .NotEmpty().WithMessage("La descripción de la entrada es requerida.")
-                .MinimumLength(3).WithMessage("La descripción debe tener al menos 3 caracteres.")
-                .MaximumLength(200).WithMessage("La descripción no puede exceder los 200 caracteres.");
+            RuleFor(x => x.Nombre)
+                .NotEmpty().WithMessage("El nombre de la entrada es requerido.")
+                .MinimumLength(3).WithMessage("El nombre debe tener al menos 3 caracteres.")
+                .MaximumLength(200).WithMessage("El nombre no puede exceder los 200 caracteres.");
 
-            RuleFor(x => x.DescripcionLarga)
-                .MaximumLength(1000).WithMessage("La descripción larga no puede exceder los 1000 caracteres.")
-                .When(x => !string.IsNullOrEmpty(x.DescripcionLarga));
+            RuleFor(x => x.Descripcion)
+                .MaximumLength(1000).WithMessage("La descripción no puede exceder los 1000 caracteres.")
+                .When(x => !string.IsNullOrEmpty(x.Descripcion));
 
             RuleFor(x => x.TipoEntradaId)
                 .NotEmpty().WithMessage("El tipo de entrada es requerido.")

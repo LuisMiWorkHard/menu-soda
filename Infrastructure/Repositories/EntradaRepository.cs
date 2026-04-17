@@ -28,7 +28,7 @@ public class EntradaRepository : IEntradaRepository
     {
         return await _genericRepository.GetListByProcedureAsync<Entrada>(
             "menusoda.sp_get_entrada_list",
-            new { p_entdes = filter },
+            new { p_entnom = filter },
             ct
         );
     }
@@ -39,8 +39,8 @@ public class EntradaRepository : IEntradaRepository
             "menusoda.sp_ins_entrada",
             new
             {
+                p_entnom = request.Nombre,
                 p_entdes = request.Descripcion,
-                p_entdeslar = request.DescripcionLarga,
                 p_codtipent = request.TipoEntradaId,
                 p_codima = request.ImagenId,
                 p_usureg = currentUser
@@ -57,8 +57,10 @@ public class EntradaRepository : IEntradaRepository
             new
             {
                 p_id = request.Id,
+                p_entnom = request.Nombre,
                 p_entdes = request.Descripcion,
                 p_codtipent = request.TipoEntradaId,
+                p_codima = request.ImagenId,
                 p_codest = request.EstadoId,
                 p_usumod = currentUser
             },

@@ -3,8 +3,8 @@ namespace MenuSoda.Domain.Entities;
 public class Entrada
 {
     public int Id { get; set; }
-    public string Entdes { get; set; } = "";
-    public string? Entdeslar { get; set; }
+    public string Entnom { get; set; } = "";
+    public string? Entdes { get; set; }
     public int Codest { get; set; }
     public int Codtipent { get; set; }
     public int? Codima { get; set; }

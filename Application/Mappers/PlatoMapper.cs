@@ -9,7 +9,6 @@ public static partial class PlatoMapper
 {
     [MapProperty("Planom", "Nombre")]
     [MapProperty("Plades", "Descripcion")]
-    [MapProperty("Pladeslar", "DescripcionLarga")]
     [MapProperty("Codtippla", "TipoPlatoId")]
     [MapProperty("Codest", "EstadoId")]
     [MapProperty("Codima", "ImagenId")]

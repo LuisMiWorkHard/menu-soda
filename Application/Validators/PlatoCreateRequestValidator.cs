@@ -18,9 +18,6 @@ public class PlatoCreateRequestValidator : AbstractValidator<PlatoCreateRequest>
         RuleFor(x => x.TipoPlatoId)
             .GreaterThan(0).WithMessage("El ID del tipo de plato debe ser mayor a 0.");
 
-        RuleFor(x => x.DescripcionLarga)
-            .MaximumLength(500).WithMessage("La descripción larga no puede exceder los 500 caracteres.");
-
         RuleFor(x => x.ImagenId)
             .GreaterThan(0).When(x => x.ImagenId.HasValue)
             .WithMessage("El ID de imagen debe ser mayor a 0.");
