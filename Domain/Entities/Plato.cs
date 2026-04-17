@@ -13,4 +13,6 @@ public class Plato
     public int? Codima { get; set; }
     public string? Fecmod { get; set; }
     public string? Usumod { get; set; }
+    public string? Pladeslar { get; set; }
+    public int? Codima { get; set; }
 }

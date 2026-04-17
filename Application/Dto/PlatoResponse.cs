@@ -15,6 +15,6 @@ public class PlatoResponse
     public string UsuarioRegistro { get; set; } = "";
     public string? FechaModificacion { get; set; }
     public string? UsuarioModificacion { get; set; }
-
-
+    public string? DescripcionLarga { get; set; }
+    public int? ImagenId { get; set; }
 }

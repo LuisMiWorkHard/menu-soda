@@ -5,8 +5,8 @@ public class PlatoUpdateRequest
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public string Descripcion { get; set; } = string.Empty;
-    public string DescripcionLarga { get; set; } = "";
+    public string? DescripcionLarga { get; set; }
     public int TipoPlatoId { get; set; }
     public int EstadoId { get; set; }
-    public int ImagenId { get; set; }
+    public int? ImagenId { get; set; }
 }
