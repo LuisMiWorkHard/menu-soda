@@ -42,7 +42,7 @@ public class MenuImagenRepository : IMenuImagenRepository
                 p_usureg = currentUser
             },
             ct,
-            "result_cur"
+            "p_cur"
         );
         return result?.Id ?? 0;
     }
