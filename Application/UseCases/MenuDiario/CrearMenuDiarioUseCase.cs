@@ -96,7 +96,7 @@ public class CrearMenuDiarioUseCase
                     $"La imagen supera el tamaño máximo permitido de {_gcsOptions.MaxImageSizeMb} MB.");
 
             // 3. Generar nombre del objeto en GCS
-            objectName = $"images/{Guid.NewGuid()}{extension}";
+            objectName = $"cartas/{Guid.NewGuid()}{extension}";
 
             // 4. Subir a GCS
             using var stream = imagen.OpenReadStream();
