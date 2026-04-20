@@ -20,4 +20,6 @@ public class MenuImagenResponse
     public decimal Aretexbot { get; set; }
     public decimal Aretexini { get; set; }
     public decimal Aretexfin { get; set; }
+    public decimal Maxfonsiz { get; set; }
+    public string  Fonfam    { get; set; } = "";
 }

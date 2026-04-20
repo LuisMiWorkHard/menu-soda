@@ -22,7 +22,9 @@ public static class MenuImagenMapper
             Aretextop = entity.Aretextop,
             Aretexbot = entity.Aretexbot,
             Aretexini = entity.Aretexini,
-            Aretexfin = entity.Aretexfin
+            Aretexfin = entity.Aretexfin,
+            Maxfonsiz = entity.Maxfonsiz,
+            Fonfam    = entity.Fonfam
         };
 
     public static MenuImagenResponse ToResponse(this MenuImagen entity, IStorageService storageService) =>
@@ -41,6 +43,8 @@ public static class MenuImagenMapper
             Aretextop = entity.Aretextop,
             Aretexbot = entity.Aretexbot,
             Aretexini = entity.Aretexini,
-            Aretexfin = entity.Aretexfin
+            Aretexfin = entity.Aretexfin,
+            Maxfonsiz = entity.Maxfonsiz,
+            Fonfam    = entity.Fonfam
         };
 }

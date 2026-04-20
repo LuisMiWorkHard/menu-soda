@@ -14,4 +14,6 @@ public class MenuImagen
     public decimal Aretexbot { get; set; } = 0.10m;
     public decimal Aretexini { get; set; } = 0.08m;
     public decimal Aretexfin { get; set; } = 0.08m;
+    public decimal Maxfonsiz { get; set; } = 17.00m;
+    public string  Fonfam    { get; set; } = "default";
 }
