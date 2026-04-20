@@ -10,4 +10,8 @@ public class MenuImagen
     public string Usureg { get; set; } = "";
     public string? Fecmod { get; set; }
     public string? Usumod { get; set; }
+    public decimal Aretextop { get; set; } = 0.10m;
+    public decimal Aretexbot { get; set; } = 0.10m;
+    public decimal Aretexini { get; set; } = 0.08m;
+    public decimal Aretexfin { get; set; } = 0.08m;
 }

@@ -16,4 +16,8 @@ public class MenuImagenResponse
     public string UsuarioRegistro { get; set; } = "";
     public string? FechaModificacion { get; set; }
     public string? UsuarioModificacion { get; set; }
+    public decimal Aretextop { get; set; }
+    public decimal Aretexbot { get; set; }
+    public decimal Aretexini { get; set; }
+    public decimal Aretexfin { get; set; }
 }

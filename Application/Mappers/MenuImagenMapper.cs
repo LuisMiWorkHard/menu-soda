@@ -18,7 +18,11 @@ public static class MenuImagenMapper
             FechaRegistro = entity.Fecreg,
             UsuarioRegistro = entity.Usureg,
             FechaModificacion = entity.Fecmod,
-            UsuarioModificacion = entity.Usumod
+            UsuarioModificacion = entity.Usumod,
+            Aretextop = entity.Aretextop,
+            Aretexbot = entity.Aretexbot,
+            Aretexini = entity.Aretexini,
+            Aretexfin = entity.Aretexfin
         };
 
     public static MenuImagenResponse ToResponse(this MenuImagen entity, IStorageService storageService) =>
@@ -33,6 +37,10 @@ public static class MenuImagenMapper
             FechaRegistro = entity.Fecreg,
             UsuarioRegistro = entity.Usureg,
             FechaModificacion = entity.Fecmod,
-            UsuarioModificacion = entity.Usumod
+            UsuarioModificacion = entity.Usumod,
+            Aretextop = entity.Aretextop,
+            Aretexbot = entity.Aretexbot,
+            Aretexini = entity.Aretexini,
+            Aretexfin = entity.Aretexfin
         };
 }
