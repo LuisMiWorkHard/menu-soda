@@ -10,10 +10,17 @@ public class MenuDiarioListItemResponse
     public List<TipoPlatoCount> CantidadPlatos { get; set; } = new();
     public string TiempoTranscurrido { get; set; } = string.Empty;
     public string? ImagenUrl { get; set; }
+    public List<CoincidenciaDto>? Coincidencias { get; set; }
 }
 
 public class TipoPlatoCount
 {
     public string TipoPlato { get; set; } = string.Empty;
     public int Cantidad { get; set; }
+}
+
+public class CoincidenciaDto
+{
+    public string Tipo { get; set; } = string.Empty;
+    public string Nombre { get; set; } = string.Empty;
 }

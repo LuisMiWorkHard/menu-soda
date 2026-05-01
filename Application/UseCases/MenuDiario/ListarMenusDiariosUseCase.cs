@@ -51,14 +51,26 @@ public class ListarMenusDiariosUseCase
                     if (raw != null)
                         platosList = raw.Select(p => new TipoPlatoCount { TipoPlato = p.TipoPlato, Cantidad = p.Cantidad }).ToList();
                 }
-                catch { /* Ignorar error de parseo */ }
+                catch { }
             }
 
             string? imagenUrl = null;
             if (!string.IsNullOrEmpty(item.Imagen_ruta))
             {
                 try { imagenUrl = _storageService.GetSignedUrl(item.Imagen_ruta); }
-                catch { /* No interrumpir el listado si falla la URL firmada */ }
+                catch { }
+            }
+
+            List<CoincidenciaDto>? coincidencias = null;
+            if (!string.IsNullOrEmpty(item.Coincidencias))
+            {
+                try
+                {
+                    var raw = JsonSerializer.Deserialize<List<CoincidenciaJson>>(item.Coincidencias);
+                    if (raw != null)
+                        coincidencias = raw.Select(c => new CoincidenciaDto { Tipo = c.Tipo, Nombre = c.Nombre }).ToList();
+                }
+                catch { }
             }
 
             response.Add(new MenuDiarioListItemResponse
@@ -70,7 +82,8 @@ public class ListarMenusDiariosUseCase
                 TiempoTranscurrido = GetTimeElapsed(fecModVal),
                 CantidadEntradas = item.Cantidad_entradas ?? 0,
                 CantidadPlatos = platosList,
-                ImagenUrl = imagenUrl
+                ImagenUrl = imagenUrl,
+                Coincidencias = coincidencias
             });
         }
 
@@ -111,14 +124,15 @@ public class ListarMenusDiariosUseCase
         return lastMod.Value.ToString("dd/MM/yyyy");
     }
 
-    // DTO interno para deserializar el JSON snake_case que devuelve json_agg de PostgreSQL.
-    // No exponer fuera del use case para no afectar la serialización de la respuesta de la API.
     private class PlatosPorTipoJson
     {
-        [JsonPropertyName("tipo_plato")]
-        public string TipoPlato { get; set; } = string.Empty;
+        [JsonPropertyName("tipo_plato")] public string TipoPlato { get; set; } = string.Empty;
+        [JsonPropertyName("cantidad")]   public int Cantidad { get; set; }
+    }
 
-        [JsonPropertyName("cantidad")]
-        public int Cantidad { get; set; }
+    private class CoincidenciaJson
+    {
+        [JsonPropertyName("tipo")]   public string Tipo   { get; set; } = string.Empty;
+        [JsonPropertyName("nombre")] public string Nombre { get; set; } = string.Empty;
     }
 }

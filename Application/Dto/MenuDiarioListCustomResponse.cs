@@ -19,4 +19,5 @@ public class MenuDiarioListCustomResponse
     public int? Cantidad_entradas { get; set; }
     public string? Platos_por_tipo { get; set; } // JSON string desde PostgreSQL
     public string? Imagen_ruta { get; set; }
+    public string? Coincidencias { get; set; } // JSON string desde PostgreSQL (solo cuando hay búsqueda)
 }
