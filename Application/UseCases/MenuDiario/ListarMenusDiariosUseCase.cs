@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 
@@ -46,8 +47,9 @@ public class ListarMenusDiariosUseCase
             {
                 try
                 {
-                    platosList = JsonSerializer.Deserialize<List<TipoPlatoCount>>(item.Platos_por_tipo)
-                                 ?? new List<TipoPlatoCount>();
+                    var raw = JsonSerializer.Deserialize<List<PlatosPorTipoJson>>(item.Platos_por_tipo);
+                    if (raw != null)
+                        platosList = raw.Select(p => new TipoPlatoCount { TipoPlato = p.TipoPlato, Cantidad = p.Cantidad }).ToList();
                 }
                 catch { /* Ignorar error de parseo */ }
             }
@@ -107,5 +109,16 @@ public class ListarMenusDiariosUseCase
         if (timeSpan.TotalDays < 30) return $"Hace {(int)(timeSpan.TotalDays / 7)} semanas";
 
         return lastMod.Value.ToString("dd/MM/yyyy");
+    }
+
+    // DTO interno para deserializar el JSON snake_case que devuelve json_agg de PostgreSQL.
+    // No exponer fuera del use case para no afectar la serialización de la respuesta de la API.
+    private class PlatosPorTipoJson
+    {
+        [JsonPropertyName("tipo_plato")]
+        public string TipoPlato { get; set; } = string.Empty;
+
+        [JsonPropertyName("cantidad")]
+        public int Cantidad { get; set; }
     }
 }

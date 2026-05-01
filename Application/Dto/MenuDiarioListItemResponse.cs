@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace MenuSoda.Application.Dto;
 
 public class MenuDiarioListItemResponse
@@ -16,9 +14,6 @@ public class MenuDiarioListItemResponse
 
 public class TipoPlatoCount
 {
-    [JsonPropertyName("tipo_plato")]
     public string TipoPlato { get; set; } = string.Empty;
-
-    [JsonPropertyName("cantidad")]
     public int Cantidad { get; set; }
 }
