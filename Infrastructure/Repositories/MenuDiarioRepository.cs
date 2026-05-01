@@ -59,11 +59,11 @@ public class MenuDiarioRepository : IMenuDiarioRepository
         );
     }
 
-    public async Task<IEnumerable<MenuDiarioListCustomResponse>> GetCustomListReportAsync(CancellationToken ct)
+    public async Task<IEnumerable<MenuDiarioListCustomResponse>> GetCustomListReportAsync(string? busqueda, CancellationToken ct)
     {
         return await _genericRepository.GetListByProcedureAsync<MenuDiarioListCustomResponse>(
             "menusoda.sp_get_menu_diario_list_custom",
-            new { },
+            new { p_busqueda = busqueda },
             ct
         ) ?? Enumerable.Empty<MenuDiarioListCustomResponse>();
     }

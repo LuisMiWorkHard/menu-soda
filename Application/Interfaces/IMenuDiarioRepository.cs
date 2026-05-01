@@ -16,5 +16,5 @@ public interface IMenuDiarioRepository
 
     // Listados
     Task<IEnumerable<MenuDiario>> GetListAsync(CancellationToken ct);
-    Task<IEnumerable<MenuDiarioListCustomResponse>> GetCustomListReportAsync(CancellationToken ct);
+    Task<IEnumerable<MenuDiarioListCustomResponse>> GetCustomListReportAsync(string? busqueda, CancellationToken ct);
 }

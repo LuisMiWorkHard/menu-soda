@@ -14,9 +14,9 @@ public class ListarMenusDiariosUseCase
         _menuDiarioRepository = menuDiarioRepository;
     }
 
-    public async Task<IEnumerable<MenuDiarioListItemResponse>> ExecuteAsync(CancellationToken ct)
+    public async Task<IEnumerable<MenuDiarioListItemResponse>> ExecuteAsync(string? busqueda, CancellationToken ct)
     {
-        var reportData = await _menuDiarioRepository.GetCustomListReportAsync(ct);
+        var reportData = await _menuDiarioRepository.GetCustomListReportAsync(busqueda, ct);
 
         var response = new List<MenuDiarioListItemResponse>();
 

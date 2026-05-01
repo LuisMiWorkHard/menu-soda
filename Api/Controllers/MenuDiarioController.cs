@@ -40,9 +40,9 @@ public class MenuDiarioController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetList(CancellationToken ct)
+    public async Task<IActionResult> GetList([FromQuery] string? busqueda, CancellationToken ct)
     {
-        var result = await _getListUseCase.ExecuteAsync(ct);
+        var result = await _getListUseCase.ExecuteAsync(busqueda, ct);
         return Ok(result);
     }
 
