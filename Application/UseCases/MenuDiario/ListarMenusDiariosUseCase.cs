@@ -8,10 +8,12 @@ namespace MenuSoda.Application.UseCases.MenuDiario;
 public class ListarMenusDiariosUseCase
 {
     private readonly IMenuDiarioRepository _menuDiarioRepository;
+    private readonly IStorageService _storageService;
 
-    public ListarMenusDiariosUseCase(IMenuDiarioRepository menuDiarioRepository)
+    public ListarMenusDiariosUseCase(IMenuDiarioRepository menuDiarioRepository, IStorageService storageService)
     {
         _menuDiarioRepository = menuDiarioRepository;
+        _storageService = storageService;
     }
 
     public async Task<IEnumerable<MenuDiarioListItemResponse>> ExecuteAsync(string? busqueda, CancellationToken ct)
@@ -33,21 +35,25 @@ public class ListarMenusDiariosUseCase
             {
                 DateTime tmp;
                 if (DateTime.TryParseExact(fecModStr, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out tmp))
-                {
                     fecModVal = tmp;
-                }
             }
 
             var platosList = new List<TipoPlatoCount>();
             if (item.Platos_por_tipo != null)
             {
-                string json = item.Platos_por_tipo;
                 try
                 {
-                    platosList = JsonSerializer.Deserialize<List<TipoPlatoCount>>(json)
-                                ?? new List<TipoPlatoCount>();
+                    platosList = JsonSerializer.Deserialize<List<TipoPlatoCount>>(item.Platos_por_tipo)
+                                 ?? new List<TipoPlatoCount>();
                 }
                 catch { /* Ignorar error de parseo */ }
+            }
+
+            string? imagenUrl = null;
+            if (!string.IsNullOrEmpty(item.Imagen_ruta))
+            {
+                try { imagenUrl = _storageService.GetSignedUrl(item.Imagen_ruta); }
+                catch { /* No interrumpir el listado si falla la URL firmada */ }
             }
 
             response.Add(new MenuDiarioListItemResponse
@@ -58,7 +64,8 @@ public class ListarMenusDiariosUseCase
                 DescripcionFecha = GetFriendlyDateName(fechaVal),
                 TiempoTranscurrido = GetTimeElapsed(fecModVal),
                 CantidadEntradas = item.Cantidad_entradas ?? 0,
-                CantidadPlatos = platosList
+                CantidadPlatos = platosList,
+                ImagenUrl = imagenUrl
             });
         }
 
@@ -73,11 +80,17 @@ public class ListarMenusDiariosUseCase
         if (date.Date == today.AddDays(1)) return "Mañana";
 
         var cal = CultureInfo.CurrentCulture.Calendar;
-        var d1 = today.Date.AddDays(-1 * (int)cal.GetDayOfWeek(today));
-        var d2 = date.Date.AddDays(-1 * (int)cal.GetDayOfWeek(date));
-        if (d1 == d2) return date.ToString("dddd");
+        var startOfWeekToday = today.AddDays(-1 * (int)cal.GetDayOfWeek(today));
+        var startOfWeekDate  = date.AddDays(-1 * (int)cal.GetDayOfWeek(date));
 
-        return date.ToString("dd MMMM yyyy").ToUpper();
+        var es = CultureInfo.GetCultureInfo("es-ES");
+        if (startOfWeekToday == startOfWeekDate)
+            return es.TextInfo.ToTitleCase(date.ToString("dddd", es));
+
+        // Formato: "Lunes, 01 May 2026"
+        string dayName   = es.TextInfo.ToTitleCase(date.ToString("dddd", es));
+        string monthAbbr = es.TextInfo.ToTitleCase(date.ToString("MMM", es).TrimEnd('.'));
+        return $"{dayName}, {date.Day:D2} {monthAbbr} {date.Year}";
     }
 
     private string GetTimeElapsed(DateTime? lastMod)

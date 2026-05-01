@@ -18,4 +18,5 @@ public class MenuDiarioListCustomResponse
     // Campos adicionales del reporte
     public int? Cantidad_entradas { get; set; }
     public string? Platos_por_tipo { get; set; } // JSON string desde PostgreSQL
+    public string? Imagen_ruta { get; set; }
 }

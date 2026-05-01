@@ -1,20 +1,24 @@
+using System.Text.Json.Serialization;
+
 namespace MenuSoda.Application.Dto;
 
 public class MenuDiarioListItemResponse
 {
     public int Id { get; set; }
     public string Fecha { get; set; } = string.Empty;
-    public string DescripcionFecha { get; set; } = string.Empty; // Hoy, Ayer, Lunes 20...
+    public string DescripcionFecha { get; set; } = string.Empty;
     public int EstadoId { get; set; }
-    
     public int CantidadEntradas { get; set; }
     public List<TipoPlatoCount> CantidadPlatos { get; set; } = new();
-    
-    public string TiempoTranscurrido { get; set; } = string.Empty; // Hace x min...
+    public string TiempoTranscurrido { get; set; } = string.Empty;
+    public string? ImagenUrl { get; set; }
 }
 
 public class TipoPlatoCount
 {
+    [JsonPropertyName("tipo_plato")]
     public string TipoPlato { get; set; } = string.Empty;
+
+    [JsonPropertyName("cantidad")]
     public int Cantidad { get; set; }
 }
