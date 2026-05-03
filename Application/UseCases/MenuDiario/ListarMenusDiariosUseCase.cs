@@ -8,9 +8,6 @@ namespace MenuSoda.Application.UseCases.MenuDiario;
 
 public class ListarMenusDiariosUseCase
 {
-    private static readonly string[] DiasEsp = { "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" };
-    private static readonly string[] MesesEsp = { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
-
     private readonly IMenuDiarioRepository _menuDiarioRepository;
     private readonly IStorageService _storageService;
 
@@ -37,9 +34,8 @@ public class ListarMenusDiariosUseCase
             DateTime? fecModVal = null;
             if (!string.IsNullOrEmpty(fecModStr))
             {
-                DateTime tmp;
-                if (DateTime.TryParseExact(fecModStr, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out tmp))
-                    fecModVal = tmp;
+                if (DateTime.TryParse(fecModStr, null, DateTimeStyles.RoundtripKind, out var tmp))
+                    fecModVal = tmp.ToUniversalTime();
             }
 
             var platosList = new List<TipoPlatoCount>();
@@ -78,7 +74,7 @@ public class ListarMenusDiariosUseCase
                 Id = item.Id,
                 Fecha = fechaStr,
                 EstadoId = item.Codest,
-                DescripcionFecha = GetFriendlyDateName(fechaVal),
+                DescripcionFecha = "",
                 TiempoTranscurrido = GetTimeElapsed(fecModVal),
                 CantidadEntradas = item.Cantidad_entradas ?? 0,
                 CantidadPlatos = platosList,
@@ -90,37 +86,15 @@ public class ListarMenusDiariosUseCase
         return response;
     }
 
-    private string GetFriendlyDateName(DateTime date)
-    {
-        var today = DateTime.Today;
-        if (date.Date == today) return "Hoy";
-        if (date.Date == today.AddDays(-1)) return "Ayer";
-        if (date.Date == today.AddDays(1)) return "Mañana";
-
-        // Inicio de semana en lunes: offset = -((dow + 6) % 7)
-        var startOfWeekToday = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
-        var startOfWeekDate  = date.AddDays(-(((int)date.DayOfWeek  + 6) % 7));
-
-        string dayName = DiasEsp[(int)date.DayOfWeek];
-
-        if (startOfWeekToday == startOfWeekDate)
-            return dayName;
-
-        // Formato: "Lunes, 01 May 2026"
-        string monthAbbr = MesesEsp[date.Month - 1];
-        return $"{dayName}, {date.Day:D2} {monthAbbr} {date.Year}";
-    }
-
     private string GetTimeElapsed(DateTime? lastMod)
     {
         if (!lastMod.HasValue) return "";
-        var timeSpan = DateTime.Now - lastMod.Value;
-
-        if (timeSpan.TotalMinutes < 60) return $"Hace {timeSpan.TotalMinutes:0} min";
-        if (timeSpan.TotalHours < 24) return $"Hace {timeSpan.TotalHours:0} horas";
-        if (timeSpan.TotalDays < 7) return $"Hace {timeSpan.TotalDays:0} días";
-        if (timeSpan.TotalDays < 30) return $"Hace {(int)(timeSpan.TotalDays / 7)} semanas";
-
+        var span = DateTime.UtcNow - lastMod.Value;
+        if (span.TotalSeconds < 60) return "Hace un momento";
+        if (span.TotalMinutes < 60) return $"Hace {(int)span.TotalMinutes} min";
+        if (span.TotalHours < 24)   return $"Hace {(int)span.TotalHours} horas";
+        if (span.TotalDays < 7)     return $"Hace {(int)span.TotalDays} días";
+        if (span.TotalDays < 30)    return $"Hace {(int)(span.TotalDays / 7)} semanas";
         return lastMod.Value.ToString("dd/MM/yyyy");
     }
 
