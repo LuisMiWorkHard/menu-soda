@@ -130,8 +130,9 @@ public class CrearMenuDiarioUseCase
             {
                 await _menuDiarioImagenRepository.AddAsync(new MenuDiarioImagenInsertRequest
                 {
-                    MenuDiarioId = menuId,
-                    ImagenId = imagenId.Value,
+                    MenuDiarioId  = menuId,
+                    ImagenId      = imagenId.Value,
+                    MenuImagenId  = request.MenuImagenId,
                     UsuarioRegistro = currentUser
                 }, ct, transaction);
             }

@@ -7,6 +7,7 @@ public class MenuDiarioImagenResponse
 {
     public int Id { get; set; }
     public int ImagenId { get; set; }
+    public int? MenuImagenId { get; set; }
     public string Ruta { get; set; } = string.Empty;
     public string Nombre { get; set; } = string.Empty;
     public string Extension { get; set; } = string.Empty;

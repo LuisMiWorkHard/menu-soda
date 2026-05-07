@@ -149,8 +149,9 @@ public class ActualizarMenuDiarioUseCase
             }, ct, transaction);
             await _menuDiarioImagenRepository.AddAsync(new MenuDiarioImagenInsertRequest
             {
-                MenuDiarioId = request.Id,
-                ImagenId = imagenId!.Value,
+                MenuDiarioId  = request.Id,
+                ImagenId      = imagenId!.Value,
+                MenuImagenId  = request.MenuImagenId,
                 UsuarioRegistro = currentUser
             }, ct, transaction);
 
