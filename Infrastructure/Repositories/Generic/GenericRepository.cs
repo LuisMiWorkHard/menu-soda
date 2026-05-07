@@ -113,7 +113,7 @@ public class GenericRepository
             procedureParameters,
             async (conn, tx, parameters) =>
             {
-                var names = parameters.ParameterNames
+                var names = GetParameterNames(parameters, procedureParameters)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
