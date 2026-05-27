@@ -2,22 +2,22 @@ using MenuSoda.Application.Dto;
 using MenuSoda.Application.Interfaces;
 using MenuSoda.Application.Mappers;
 
-namespace MenuSoda.Application.UseCases.Perfil;
+namespace MenuSoda.Application.UseCases.Usuario;
 
-public class ObtenerPerfilUseCase
+public class ObtenerUsuarioPorIdUseCase
 {
     private readonly IUserRepository _userRepository;
 
-    public ObtenerPerfilUseCase(IUserRepository userRepository)
+    public ObtenerUsuarioPorIdUseCase(IUserRepository userRepository)
     {
         _userRepository = userRepository;
     }
 
-    public async Task<PerfilResponse?> ExecuteAsync(int usuarioId, CancellationToken ct)
+    public async Task<UsuarioResponse?> ExecuteAsync(int usuarioId, CancellationToken ct)
     {
         var usuario = await _userRepository.GetByIdAsync(usuarioId, ct);
         if (usuario == null) return null;
 
-        return usuario.ToResponse();
+        return usuario.ToUsuarioResponse();
     }
 }
