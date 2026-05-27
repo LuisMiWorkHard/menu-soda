@@ -4,6 +4,7 @@ using MenuSoda.Application.UseCases.Plato;
 using MenuSoda.Application.UseCases.MenuDiario;
 using MenuSoda.Application.UseCases.Auth;
 using MenuSoda.Application.UseCases.Entrada;
+using MenuSoda.Application.UseCases.Perfil;
 using MenuSoda.Application.UseCases.Imagen;
 using MenuSoda.Application.UseCases.MenuImagen;
 using MenuSoda.Application.Interfaces;
@@ -86,6 +87,7 @@ builder.Services.AddScoped<ParseUtil>();
 
 builder.Services.AddScoped<IRefreshToken, DapperRefreshTokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ObtenerPerfilUseCase>();
 builder.Services.AddScoped<IEntradaRepository, EntradaRepository>();
 builder.Services.AddScoped<ObtenerEntradaPorIdUseCase>();
 builder.Services.AddScoped<ListarEntradasUseCase>();
