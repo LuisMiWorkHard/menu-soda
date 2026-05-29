@@ -6,15 +6,19 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-
     private readonly LoginUseCase _loginUseCase;
     private readonly ObtenerRefreshTokenUseCase _refreshUseCase;
     private readonly LogoutUseCase _logoutUseCase;
+    private readonly CambiarContrasenaUseCase _cambiarContrasenaUseCase;
+    private readonly EnviarCodigoRecuperacionUseCase _enviarCodigoUseCase;
+    private readonly VerificarCodigoRecuperacionUseCase _verificarCodigoUseCase;
+    private readonly RestablecerContrasenaRecuperacionUseCase _restablecerContrasenaUseCase;
     private readonly ParseUtil _parseUtil;
     private readonly AuthOptions _authOptions;
 
@@ -22,12 +26,20 @@ public class AuthController : ControllerBase
         LoginUseCase loginUseCase,
         ObtenerRefreshTokenUseCase refreshUseCase,
         LogoutUseCase logoutUseCase,
+        CambiarContrasenaUseCase cambiarContrasenaUseCase,
+        EnviarCodigoRecuperacionUseCase enviarCodigoUseCase,
+        VerificarCodigoRecuperacionUseCase verificarCodigoUseCase,
+        RestablecerContrasenaRecuperacionUseCase restablecerContrasenaUseCase,
         ParseUtil parseUtil,
         IOptions<AuthOptions> authOptions)
     {
         _loginUseCase = loginUseCase;
         _refreshUseCase = refreshUseCase;
         _logoutUseCase = logoutUseCase;
+        _cambiarContrasenaUseCase = cambiarContrasenaUseCase;
+        _enviarCodigoUseCase = enviarCodigoUseCase;
+        _verificarCodigoUseCase = verificarCodigoUseCase;
+        _restablecerContrasenaUseCase = restablecerContrasenaUseCase;
         _parseUtil = parseUtil;
         _authOptions = authOptions.Value;
     }
@@ -94,6 +106,48 @@ public class AuthController : ControllerBase
         });
 
         return Ok(new { Token = result.AccessToken });
+    }
+
+    [Authorize]
+    [HttpPut("contrasena")]
+    public async Task<IActionResult> CambiarContrasena(
+        [FromBody] CambiarContrasenaRequest request,
+        CancellationToken ct)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        await _cambiarContrasenaUseCase.ExecuteAsync(userId, request, ct);
+        return NoContent();
+    }
+
+    [Authorize]
+    [HttpPost("recuperar/codigo")]
+    public async Task<IActionResult> EnviarCodigoRecuperacion(CancellationToken ct)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        var result = await _enviarCodigoUseCase.ExecuteAsync(userId, ct);
+        return Ok(result);
+    }
+
+    [Authorize]
+    [HttpPost("recuperar/verificar")]
+    public async Task<IActionResult> VerificarCodigoRecuperacion(
+        [FromBody] VerificarCodigoRecuperacionRequest request,
+        CancellationToken ct)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        await _verificarCodigoUseCase.ExecuteAsync(userId, request, ct);
+        return NoContent();
+    }
+
+    [Authorize]
+    [HttpPut("recuperar/contrasena")]
+    public async Task<IActionResult> RestablecerContrasenaRecuperacion(
+        [FromBody] RestablecerContrasenaRecuperacionRequest request,
+        CancellationToken ct)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        await _restablecerContrasenaUseCase.ExecuteAsync(userId, request, ct);
+        return NoContent();
     }
 
     [Authorize]

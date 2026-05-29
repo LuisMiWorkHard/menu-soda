@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using MenuSoda.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace MenuSoda.Infrastructure.Middleware;
@@ -29,6 +30,23 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
+        // TooManyRequestsException: se maneja aparte para devolver 429 con detalle siempre visible
+        if (exception is TooManyRequestsException tooMany)
+        {
+            _logger.LogWarning(tooMany, "Límite de reenvíos excedido");
+            httpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+            httpContext.Response.ContentType = "application/problem+json";
+            await httpContext.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Status   = StatusCodes.Status429TooManyRequests,
+                Title    = "Demasiadas solicitudes",
+                Detail   = tooMany.Message,
+                Instance = httpContext.Request.Path,
+                Extensions = { ["code"] = "ERR_LIMITE_REENVIOS", ["traceId"] = httpContext.TraceIdentifier }
+            }, cancellationToken);
+            return true;
+        }
+
         var status = exception switch
         {
             BadHttpRequestException badReq     => badReq.StatusCode,

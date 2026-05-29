@@ -21,12 +21,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MenuSoda.Application.Options;
+using MenuSoda.Infrastructure.Email;
 using Microsoft.AspNetCore.HttpOverrides;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MenuSoda.Application.Validators;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,6 +85,10 @@ builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 builder.Services.AddScoped<LoginUseCase>();
 builder.Services.AddScoped<ObtenerRefreshTokenUseCase>();
 builder.Services.AddScoped<LogoutUseCase>();
+builder.Services.AddScoped<CambiarContrasenaUseCase>();
+builder.Services.AddScoped<EnviarCodigoRecuperacionUseCase>();
+builder.Services.AddScoped<VerificarCodigoRecuperacionUseCase>();
+builder.Services.AddScoped<RestablecerContrasenaRecuperacionUseCase>();
 builder.Services.AddScoped<ParseUtil>();
 
 builder.Services.AddScoped<IRefreshToken, DapperRefreshTokenService>();
@@ -171,6 +177,14 @@ builder.Services.AddProblemDetails(options =>
 // Configura opciones fuertemente tipadas desde appsettings.json
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
 builder.Services.Configure<GcsOptions>(builder.Configuration.GetSection("Gcs"));
+builder.Services.Configure<ResendOptions>(builder.Configuration.GetSection("Resend"));
+
+// Resend SDK — envío de emails transaccionales
+builder.Services.AddResend(opts =>
+{
+    opts.ApiToken = builder.Configuration["Resend:ApiKey"] ?? "";
+});
+builder.Services.AddScoped<IEmailService, ResendEmailService>();
 
 // Google Cloud Storage
 builder.Services.AddSingleton<IStorageService, GcsStorageService>();
