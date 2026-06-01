@@ -87,7 +87,9 @@ public class EnviarCodigoRecuperacionUseCase
         var local = parts[0];
         var masked = local.Length <= 2
             ? new string('*', local.Length)
-            : $"{local[0]}{new string('*', local.Length - 2)}{local[^1]}";
+            : local.Length <= 6
+                ? $"{local[0]}{new string('*', local.Length - 2)}{local[^1]}"
+                : $"{local[..3]}{new string('*', local.Length - 6)}{local[^3..]}";
         return $"{masked}@{parts[1]}";
     }
 }

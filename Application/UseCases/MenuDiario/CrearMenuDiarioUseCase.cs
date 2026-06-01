@@ -138,24 +138,27 @@ public class CrearMenuDiarioUseCase
             }
 
             // D. Insertar entradas
-            foreach (var entId in request.EntradasIds)
+            for (var i = 0; i < request.EntradasIds.Count; i++)
             {
                 await _menuDiarioEntradaRepository.AddAsync(new MenuDiarioEntradaInsertRequest
                 {
                     MenuDiarioId = menuId,
-                    EntradaId = entId,
-                    UsuarioRegistro = currentUser
+                    EntradaId = request.EntradasIds[i],
+                    UsuarioRegistro = currentUser,
+                    Orden = i
                 }, ct, transaction);
             }
 
             // E. Insertar platos y adicionales
-            foreach (var platoItem in request.Platos)
+            for (var i = 0; i < request.Platos.Count; i++)
             {
+                var platoItem = request.Platos[i];
                 var idPlatoGenerado = await _menuDiarioPlatoRepository.AddAsync(new MenuDiarioPlatoInsertRequest
                 {
                     Codmendia = menuId,
                     Codpla = platoItem.PlatoId,
-                    Usureg = currentUser
+                    Usureg = currentUser,
+                    Orden = i
                 }, ct, transaction);
 
                 if (platoItem.AdicionalId.HasValue && platoItem.AdicionalId.Value > 0)

@@ -161,13 +161,14 @@ public class ActualizarMenuDiarioUseCase
                 Codmendia = request.Id,
                 Usumod = currentUser
             }, ct, transaction);
-            foreach (var entId in request.EntradasIds)
+            for (var i = 0; i < request.EntradasIds.Count; i++)
             {
                 await _menuDiarioEntradaRepository.AddAsync(new MenuDiarioEntradaInsertRequest
                 {
                     MenuDiarioId = request.Id,
-                    EntradaId = entId,
-                    UsuarioRegistro = currentUser
+                    EntradaId = request.EntradasIds[i],
+                    UsuarioRegistro = currentUser,
+                    Orden = i
                 }, ct, transaction);
             }
 
@@ -185,13 +186,15 @@ public class ActualizarMenuDiarioUseCase
             }, ct, transaction);
 
             // Re-insertar Platos + Adicionales
-            foreach (var platoItem in request.Platos)
+            for (var i = 0; i < request.Platos.Count; i++)
             {
+                var platoItem = request.Platos[i];
                 var idPlatoGenerado = await _menuDiarioPlatoRepository.AddAsync(new MenuDiarioPlatoInsertRequest
                 {
                     Codmendia = request.Id,
                     Codpla = platoItem.PlatoId,
-                    Usureg = currentUser
+                    Usureg = currentUser,
+                    Orden = i
                 }, ct, transaction);
 
                 if (platoItem.AdicionalId.HasValue && platoItem.AdicionalId.Value > 0)

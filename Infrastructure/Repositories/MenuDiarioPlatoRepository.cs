@@ -17,7 +17,7 @@ public class MenuDiarioPlatoRepository : IMenuDiarioPlatoRepository
     {
         var result = await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_ins_menu_diario_plato",
-            new { p_codmendia = request.Codmendia, p_codpla = request.Codpla, p_usureg = request.Usureg },
+            new { p_codmendia = request.Codmendia, p_codpla = request.Codpla, p_usureg = request.Usureg, p_orden = request.Orden },
             ct,
             "result_cur",
             (Npgsql.NpgsqlTransaction?)transaction

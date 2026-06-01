@@ -17,7 +17,7 @@ public class MenuDiarioEntradaRepository : IMenuDiarioEntradaRepository
     {
         await _genericRepository.GetSingleByProcedureAsync<OperationIdResponse>(
             "menusoda.sp_ins_menu_diario_entrada",
-            new { p_codmendia = request.MenuDiarioId, p_codent = request.EntradaId, p_usureg = request.UsuarioRegistro },
+            new { p_codmendia = request.MenuDiarioId, p_codent = request.EntradaId, p_usureg = request.UsuarioRegistro, p_orden = request.Orden },
             ct,
             "result_cur",
             (Npgsql.NpgsqlTransaction?)transaction
